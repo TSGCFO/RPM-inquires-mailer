@@ -1,0 +1,27 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# Documents
+*.md text
+*.txt text
+*.pdf binary
+
+# Graphics
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.svg text
+
+# Scripts
+*.bash text eol=lf
+*.sh text eol=lf
+*.py text
+*.js text
+*.ts text
+
+# Git Config
+.gitattributes text
+.gitignore text
+.gitconfig text
