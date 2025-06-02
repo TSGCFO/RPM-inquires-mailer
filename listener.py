@@ -43,14 +43,30 @@ def graph_token() -> str:
     _token["exp"] = time.time() + int(data.get("expires_in", 3600))
     return _token["val"]
 
-def send_email(body_text: str):
+def send_email(record: dict):
+    """Send a readable e-mail from an inquiry row (dict)."""
+    subject = "🆕  New Inquiry Received"
+
+    # Pull out known columns, falling back to “--” if missing
+    lines = [
+        f"Name        : {record.get('name', '--')}",
+        f"Email       : {record.get('email', '--')}",
+        f"Phone       : {record.get('phone') or '--'}",
+        f"Subject     : {record.get('subject', '--')}",
+        f"Message     : {record.get('message', '--')}",
+        f"Vehicle ID  : {record.get('vehicle_id') or 'N/A'}",
+        f"Created At  : {record.get('created_at', '--')}",
+        f"Status      : {record.get('status', '--')}",
+    ]
+    body_text = "New Inquiry Received\n" + "-" * 25 + "\n" + "\n".join(lines)
+
     headers = {
         "Authorization": f"Bearer {graph_token()}",
         "Content-Type": "application/json",
     }
     payload = {
         "message": {
-            "subject": "🆕  New inquiry received",
+            "subject": subject,
             "body": {"contentType": "Text", "content": body_text},
             "toRecipients": [{"emailAddress": {"address": TO_EMAIL}}],
         },
