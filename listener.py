@@ -70,7 +70,7 @@ with conn.cursor() as cur:
 print("🔔 Listening on channel new_record_channel …")
 
 while True:
-    conn.wait(timeout=60)            # blocks until something happens
+    conn.wait(60)            # blocks until something happens
     while conn.notifies:             # handle everything in the queue
         notify = conn.notifies.pop(0)
         try:
