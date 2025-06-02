@@ -1,29 +1,31 @@
 """
-Listener for public.inquiries  ➜  e-mail via Microsoft Graph
+Background worker
+  • LISTEN on channel new_record_channel
+  • when a NOTIFY arrives, e-mail the row via Microsoft Graph
 
-psycopg 3 version – no add_listener()
-
-ENV VARS (same as before)
--------------------------
-PGHOST, PGDATABASE, PGUSER, PGPASSWORD
-TENANT_ID, CLIENT_ID, CLIENT_SECRET
-FROM_EMAIL, TO_EMAIL
+Env-vars required (exact names):
+  PGHOST, PGDATABASE, PGUSER, PGPASSWORD
+  TENANT_ID, CLIENT_ID, CLIENT_SECRET
+  FROM_EMAIL, TO_EMAIL
 """
 
 import os, json, time, requests, psycopg
 
-# ---------- Graph helpers (unchanged) ----------
-TENANT_ID, CLIENT_ID  = os.getenv("TENANT_ID"), os.getenv("CLIENT_ID")
-CLIENT_SECRET         = os.getenv("CLIENT_SECRET")
-FROM_EMAIL, TO_EMAIL  = os.getenv("FROM_EMAIL"), os.getenv("TO_EMAIL")
+# ── Graph helpers ──────────────────────────────────────────────────────────
+TENANT_ID     = os.getenv("TENANT_ID")
+CLIENT_ID     = os.getenv("CLIENT_ID")
+CLIENT_SECRET = os.getenv("CLIENT_SECRET")
+FROM_EMAIL    = os.getenv("FROM_EMAIL")
+TO_EMAIL      = os.getenv("TO_EMAIL")
 
 TOKEN_URL    = f"https://login.microsoftonline.com/{TENANT_ID}/oauth2/v2.0/token"
 SENDMAIL_URL = f"https://graph.microsoft.com/v1.0/users/{FROM_EMAIL}/sendMail"
 
-_token = {"value": None, "exp": 0}
+_token = {"val": None, "exp": 0}
 def graph_token() -> str:
+    """Cache & refresh Graph access token (expires ~3600 s)."""
     if _token["exp"] - time.time() > 60:
-        return _token["value"]
+        return _token["val"]
 
     resp = requests.post(
         TOKEN_URL,
@@ -37,9 +39,9 @@ def graph_token() -> str:
     )
     resp.raise_for_status()
     data = resp.json()
-    _token["value"] = data["access_token"]
-    _token["exp"]   = time.time() + int(data.get("expires_in", 3600))
-    return _token["value"]
+    _token["val"] = data["access_token"]
+    _token["exp"] = time.time() + int(data.get("expires_in", 3600))
+    return _token["val"]
 
 def send_email(body_text: str):
     headers = {
@@ -48,7 +50,7 @@ def send_email(body_text: str):
     }
     payload = {
         "message": {
-            "subject": "🆕 New inquiry received",
+            "subject": "🆕  New inquiry received",
             "body": {"contentType": "Text", "content": body_text},
             "toRecipients": [{"emailAddress": {"address": TO_EMAIL}}],
         },
@@ -56,28 +58,25 @@ def send_email(body_text: str):
     }
     requests.post(SENDMAIL_URL, headers=headers, json=payload, timeout=15).raise_for_status()
 
-# --- PostgreSQL listener ------------------------------------------------------
-conn = psycopg.connect(
-    host     = os.getenv("PGHOST"),
-    dbname   = os.getenv("PGDATABASE"),
-    user     = os.getenv("PGUSER"),
-    password = os.getenv("PGPASSWORD"),
+# ── PostgreSQL LISTEN / NOTIFY ────────────────────────────────────────────
+conn = psycopg.connect(               # uses blocking (normal) connection
+    host=os.getenv("PGHOST"),
+    dbname=os.getenv("PGDATABASE"),
+    user=os.getenv("PGUSER"),
+    password=os.getenv("PGPASSWORD"),
+    autocommit=True,                  # required for LISTEN to work right
 )
-conn.autocommit = True
 
 with conn.cursor() as cur:
     cur.execute("LISTEN new_record_channel;")
-print("🔔 Listening on channel new_record_channel …")
 
-while True:
-    conn.wait(60)            # blocks until something happens
-    while conn.notifies:             # handle everything in the queue
-        notify = conn.notifies.pop(0)
-        try:
-            record = json.loads(notify.payload)
-            send_email(json.dumps(record, indent=2))
-            print("📨 Email sent for inquiry id:", record.get("id"))
-        except Exception as e:
-            print("⚠️  Failed to send email:", e)
+print("🔔  Listening on channel new_record_channel …")
 
-    time.sleep(0.5)                   # small sleep to avoid tight loop
+for notify in conn.notifies():        # blocks until a NOTIFY is received 1
+    try:
+        record = json.loads(notify.payload)
+        pretty = json.dumps(record, indent=2)
+        send_email(pretty)
+        print("📨  Email sent for inquiry id:", record.get("id"))
+    except Exception as exc:
+        print("⚠️  Failed to handle notification:", exc)
