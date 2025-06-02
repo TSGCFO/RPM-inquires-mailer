@@ -1,89 +1,83 @@
 """
-Background listener for public.inquiries → email alert.
+Listener for public.inquiries  ➜  e-mail via Microsoft Graph
 
-Environment variables required (Render → Environment tab):
-  PGHOST            database host (e.g. dpg-xxxxx)
-  PGDATABASE        rpm_auto
-  PGUSER            rpm_auto_user
-  PGPASSWORD        <database password>
+psycopg 3 version – no add_listener()
 
-  TENANT_ID         5e0201b4-03ba-41c2-bc2e-9fc2475a202d
-  CLIENT_ID         6df2862f-dba2-4302-b11b-fdab0a0d2485
-  CLIENT_SECRET     <client secret value>
-
-  FROM_EMAIL        fateh@rpmautosales.ca
-  TO_EMAIL          info@rpmautosales.ca
+ENV VARS (same as before)
+-------------------------
+PGHOST, PGDATABASE, PGUSER, PGPASSWORD
+TENANT_ID, CLIENT_ID, CLIENT_SECRET
+FROM_EMAIL, TO_EMAIL
 """
 
 import os, json, time, requests, psycopg
 
-# --- Graph helpers -----------------------------------------------------------
-TENANT_ID      = os.getenv("TENANT_ID")
-CLIENT_ID      = os.getenv("CLIENT_ID")
-CLIENT_SECRET  = os.getenv("CLIENT_SECRET")
-FROM_EMAIL     = os.getenv("FROM_EMAIL")
-TO_EMAIL       = os.getenv("TO_EMAIL")
+# ---------- Graph helpers (unchanged) ----------
+TENANT_ID, CLIENT_ID  = os.getenv("TENANT_ID"), os.getenv("CLIENT_ID")
+CLIENT_SECRET         = os.getenv("CLIENT_SECRET")
+FROM_EMAIL, TO_EMAIL  = os.getenv("FROM_EMAIL"), os.getenv("TO_EMAIL")
 
 TOKEN_URL    = f"https://login.microsoftonline.com/{TENANT_ID}/oauth2/v2.0/token"
 SENDMAIL_URL = f"https://graph.microsoft.com/v1.0/users/{FROM_EMAIL}/sendMail"
 
-_token_cache = {"access_token": None, "expires_at": 0}
+_token = {"value": None, "exp": 0}
+def graph_token() -> str:
+    if _token["exp"] - time.time() > 60:
+        return _token["value"]
 
-def get_access_token() -> str:
-    """Fetch a new token if the current one expires in < 60 seconds."""
-    if _token_cache["access_token"] and _token_cache["expires_at"] - time.time() > 60:
-        return _token_cache["access_token"]
-
-    data = {
-        "client_id": CLIENT_ID,
-        "client_secret": CLIENT_SECRET,
-        "scope": "https://graph.microsoft.com/.default",
-        "grant_type": "client_credentials",
-    }
-    resp = requests.post(TOKEN_URL, data=data, timeout=15)
+    resp = requests.post(
+        TOKEN_URL,
+        data={
+            "client_id": CLIENT_ID,
+            "client_secret": CLIENT_SECRET,
+            "scope": "https://graph.microsoft.com/.default",
+            "grant_type": "client_credentials",
+        },
+        timeout=15,
+    )
     resp.raise_for_status()
-    body = resp.json()
-    _token_cache["access_token"] = body["access_token"]
-    _token_cache["expires_at"]   = time.time() + int(body.get("expires_in", 3600))
-    return _token_cache["access_token"]
+    data = resp.json()
+    _token["value"] = data["access_token"]
+    _token["exp"]   = time.time() + int(data.get("expires_in", 3600))
+    return _token["value"]
 
 def send_email(body_text: str):
-    token = get_access_token()
     headers = {
-        "Authorization": f"Bearer {token}",
-        "Content-Type": "application/json"
+        "Authorization": f"Bearer {graph_token()}",
+        "Content-Type": "application/json",
     }
     payload = {
         "message": {
-            "subject": "New inquiry received",
-            "body": { "contentType": "Text", "content": body_text },
-            "toRecipients": [ { "emailAddress": { "address": TO_EMAIL } } ]
+            "subject": "🆕 New inquiry received",
+            "body": {"contentType": "Text", "content": body_text},
+            "toRecipients": [{"emailAddress": {"address": TO_EMAIL}}],
         },
-        "saveToSentItems": "false"
+        "saveToSentItems": "false",
     }
-    resp = requests.post(SENDMAIL_URL, headers=headers, json=payload, timeout=15)
-    resp.raise_for_status()
+    requests.post(SENDMAIL_URL, headers=headers, json=payload, timeout=15).raise_for_status()
 
-# --- PostgreSQL listener ------------------------------------------------------
-DB_CONN = psycopg.connect(
-    host     = os.getenv("PGHOST"),
-    dbname   = os.getenv("PGDATABASE"),
-    user     = os.getenv("PGUSER"),
-    password = os.getenv("PGPASSWORD"),
+# ---------- Postgres connection & notifier ----------
+conn = psycopg.connect(
+    host=os.getenv("PGHOST"),
+    dbname=os.getenv("PGDATABASE"),
+    user=os.getenv("PGUSER"),
+    password=os.getenv("PGPASSWORD"),
 )
 
-def on_notify(conn, pid, channel, payload):
-    try:
-        record = json.loads(payload)
-        pretty = json.dumps(record, indent=2)
-        send_email(pretty)
-        print("Sent email for inquiry id:", record.get("id"))
-    except Exception as e:
-        print("Failed to send email:", e)
+with conn.cursor() as cur:
+    cur.execute("LISTEN new_record_channel;")
+conn.commit()
 
-print("Listening on channel new_record_channel …")
-DB_CONN.add_listener("new_record_channel", on_notify)
+print("🔔 Listening on channel new_record_channel …")
 
 while True:
-    DB_CONN.poll()
-    DB_CONN.commit()
+    conn.poll()                       # check for backend messages
+    while conn.notifies:              # handle all pending notifications
+        notify = conn.notifies.pop(0)
+        try:
+            record = json.loads(notify.payload)
+            send_email(json.dumps(record, indent=2))
+            print("📨 Email sent for inquiry id:", record.get("id"))
+        except Exception as e:
+            print("⚠️  Failed to send email:", e)
+    time.sleep(0.5)                   # small sleep to avoid tight loop
