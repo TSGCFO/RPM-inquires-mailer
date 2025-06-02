@@ -56,23 +56,22 @@ def send_email(body_text: str):
     }
     requests.post(SENDMAIL_URL, headers=headers, json=payload, timeout=15).raise_for_status()
 
-# ---------- Postgres connection & notifier ----------
+# --- PostgreSQL listener ------------------------------------------------------
 conn = psycopg.connect(
-    host=os.getenv("PGHOST"),
-    dbname=os.getenv("PGDATABASE"),
-    user=os.getenv("PGUSER"),
-    password=os.getenv("PGPASSWORD"),
+    host     = os.getenv("PGHOST"),
+    dbname   = os.getenv("PGDATABASE"),
+    user     = os.getenv("PGUSER"),
+    password = os.getenv("PGPASSWORD"),
 )
+conn.autocommit = True
 
 with conn.cursor() as cur:
     cur.execute("LISTEN new_record_channel;")
-conn.commit()
-
 print("🔔 Listening on channel new_record_channel …")
 
 while True:
-    conn.poll()                       # check for backend messages
-    while conn.notifies:              # handle all pending notifications
+    conn.wait(timeout=60)            # blocks until something happens
+    while conn.notifies:             # handle everything in the queue
         notify = conn.notifies.pop(0)
         try:
             record = json.loads(notify.payload)
@@ -80,4 +79,5 @@ while True:
             print("📨 Email sent for inquiry id:", record.get("id"))
         except Exception as e:
             print("⚠️  Failed to send email:", e)
+
     time.sleep(0.5)                   # small sleep to avoid tight loop
