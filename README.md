@@ -1,4 +1,4 @@
-# inquires-mail-notification
+# inquiries-mail-notification
 
 ## Description
 Add your project description here.
