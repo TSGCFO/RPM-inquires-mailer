@@ -9,7 +9,30 @@ Environment variables required (Render → Environment):
   FROM_EMAIL, TO_EMAIL
 """
 
-import os, json, time, requests, psycopg
+import os
+import json
+import time
+import requests
+import psycopg
+
+# Verify that all required environment variables are present
+REQUIRED_ENV_VARS = [
+    "PGHOST",
+    "PGDATABASE",
+    "PGUSER",
+    "PGPASSWORD",
+    "TENANT_ID",
+    "CLIENT_ID",
+    "CLIENT_SECRET",
+    "FROM_EMAIL",
+    "TO_EMAIL",
+]
+
+missing_vars = [var for var in REQUIRED_ENV_VARS if not os.getenv(var)]
+if missing_vars:
+    raise RuntimeError(
+        "Missing required environment variables: " + ", ".join(missing_vars)
+    )
 
 # ── Microsoft Graph helpers ──────────────────────────────────────────────
 TENANT_ID     = os.getenv("TENANT_ID")
@@ -76,6 +99,7 @@ def send_email(record: dict):
     requests.post(SENDMAIL_URL, headers=headers, json=payload, timeout=15).raise_for_status()
 
 # ── PostgreSQL LISTEN / NOTIFY setup ─────────────────────────────────────
+
 def main() -> None:
     """Listen for new records and send notification e-mails."""
     conn = psycopg.connect(
