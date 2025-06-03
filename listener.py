@@ -99,23 +99,30 @@ def send_email(record: dict):
     requests.post(SENDMAIL_URL, headers=headers, json=payload, timeout=15).raise_for_status()
 
 # ── PostgreSQL LISTEN / NOTIFY setup ─────────────────────────────────────
-conn = psycopg.connect(
-    host=os.getenv("PGHOST"),
-    dbname=os.getenv("PGDATABASE"),
-    user=os.getenv("PGUSER"),
-    password=os.getenv("PGPASSWORD"),
-    autocommit=True,            # LISTEN works best with autocommit
-)
 
-with conn.cursor() as cur:
-    cur.execute("LISTEN new_record_channel;")
+def main() -> None:
+    """Listen for new records and send notification e-mails."""
+    conn = psycopg.connect(
+        host=os.getenv("PGHOST"),
+        dbname=os.getenv("PGDATABASE"),
+        user=os.getenv("PGUSER"),
+        password=os.getenv("PGPASSWORD"),
+        autocommit=True,  # LISTEN works best with autocommit
+    )
 
-print("🔔  Listening on channel new_record_channel …")
+    with conn.cursor() as cur:
+        cur.execute("LISTEN new_record_channel;")
 
-for notify in conn.notifies():  # blocks until a NOTIFY is received
-    try:
-        record = json.loads(notify.payload)
-        send_email(record)
-        print("📨  Email sent for inquiry id:", record.get("id"))
-    except Exception as exc:
-        print("⚠️  Failed to handle notification:", exc)
+    print("🔔  Listening on channel new_record_channel …")
+
+    for notify in conn.notifies():  # blocks until a NOTIFY is received
+        try:
+            record = json.loads(notify.payload)
+            send_email(record)
+            print("📨  Email sent for inquiry id:", record.get("id"))
+        except Exception as exc:
+            print("⚠️  Failed to handle notification:", exc)
+
+
+if __name__ == "__main__":
+    main()
