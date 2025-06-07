@@ -19,6 +19,7 @@ import time
 import threading
 from dataclasses import dataclass
 from typing import Dict, Optional
+from concurrent.futures import ThreadPoolExecutor, Future
 import requests
 import psycopg
 
@@ -105,20 +106,26 @@ def load_instance_configs() -> list[InstanceConfig]:
 
 # ── Microsoft Graph helpers ──────────────────────────────────────────────
 
-# Token cache: Dict[tenant_id, token_info]
+# Token cache: Dict[tenant_id, token_info] with thread safety
 _tokens: Dict[str, Dict[str, any]] = {}
+_token_lock = threading.Lock()
 
 def graph_token(config: InstanceConfig) -> str:
     """Cache & refresh the app-only access token for a specific tenant (expires in ~1 h)."""
     tenant_id = config.tenant_id
     
-    # Check if we have a valid cached token
-    if tenant_id in _tokens:
-        token_info = _tokens[tenant_id]
-        if token_info["exp"] - time.time() > 60:
-            return token_info["val"]
+    # Thread-safe token cache access
+    with _token_lock:
+        # Check if we have a valid cached token
+        if tenant_id in _tokens:
+            token_info = _tokens[tenant_id]
+            if token_info["exp"] - time.time() > 60:
+                return token_info["val"]
+        
+        # Need to refresh token - release lock during HTTP request
+        pass
     
-    # Request new token
+    # Request new token (outside lock to avoid blocking other threads during HTTP call)
     token_url = f"https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token"
     resp = requests.post(
         token_url,
@@ -133,13 +140,13 @@ def graph_token(config: InstanceConfig) -> str:
     resp.raise_for_status()
     body = resp.json()
     
-    # Cache the token
-    _tokens[tenant_id] = {
-        "val": body["access_token"],
-        "exp": time.time() + int(body.get("expires_in", 3600))
-    }
-    
-    return _tokens[tenant_id]["val"]
+    # Thread-safe token cache update
+    with _token_lock:
+        _tokens[tenant_id] = {
+            "val": body["access_token"],
+            "exp": time.time() + int(body.get("expires_in", 3600))
+        }
+        return _tokens[tenant_id]["val"]
 
 class DatabaseListener:
     """Handles database listening and email sending for a single instance."""
@@ -201,6 +208,23 @@ class DatabaseListener:
             print(f"❌ [{self.config.instance_name}] Failed to send email: {e}")
             raise
     
+    def fetch_full_record(self, record_id: str) -> Optional[dict]:
+        """Fetch complete record from database using the ID."""
+        try:
+            with self.conn.cursor() as cur:
+                cur.execute("SELECT * FROM inquiries WHERE id = %s", (record_id,))
+                row = cur.fetchone()
+                if row:
+                    # Convert row to dict using column names
+                    columns = [desc[0] for desc in cur.description]
+                    return dict(zip(columns, row))
+                else:
+                    print(f"⚠️  [{self.config.instance_name}] Record with ID {record_id} not found")
+                    return None
+        except Exception as e:
+            print(f"❌ [{self.config.instance_name}] Failed to fetch record {record_id}: {e}")
+            return None
+
     def listen_and_process(self) -> None:
         """Listen for new records and send notification emails."""
         if not self.conn:
@@ -214,8 +238,23 @@ class DatabaseListener:
             
             for notify in self.conn.notifies():  # blocks until a NOTIFY is received
                 try:
-                    record = json.loads(notify.payload)
-                    self.send_email(record)
+                    # Parse notification payload (expecting minimal JSON with just ID)
+                    notification_data = json.loads(notify.payload)
+                    
+                    # Handle both new minimal format {"id": "123"} and legacy full record format
+                    if "id" in notification_data and len(notification_data) == 1:
+                        # New minimal format - fetch full record
+                        record_id = notification_data["id"]
+                        record = self.fetch_full_record(record_id)
+                        if record:
+                            self.send_email(record)
+                        else:
+                            print(f"⚠️  [{self.config.instance_name}] Skipping notification for missing record {record_id}")
+                    else:
+                        # Legacy format - use notification data directly
+                        print(f"📥 [{self.config.instance_name}] Using legacy notification format")
+                        self.send_email(notification_data)
+                        
                 except Exception as exc:
                     print(f"⚠️  [{self.config.instance_name}] Failed to handle notification: {exc}")
         
@@ -235,39 +274,55 @@ class DatabaseListener:
 # ── Main entry point ─────────────────────────────────────────────────────
 
 def main() -> None:
-    """Load configurations and start multiple database listeners concurrently."""
+    """Load configurations and start supervised database listeners."""
     configs = load_instance_configs()
     
     if not configs:
         print("❌ No valid configurations found. Exiting.")
         return
     
-    print(f"🚀 Starting {len(configs)} database listener(s)...")
+    print(f"🚀 Starting {len(configs)} database listener(s) with supervision...")
     
-    threads = []
-    
-    # Create and start a thread for each configuration
-    for config in configs:
-        listener = DatabaseListener(config)
-        thread = threading.Thread(
-            target=listener.listen_and_process,
-            name=f"Listener-{config.instance_name}",
-            daemon=True  # Allows main process to exit cleanly
-        )
-        threads.append(thread)
-        thread.start()
-        print(f"🧵 Started thread for {config.instance_name}")
-    
-    try:
-        # Wait for all threads to complete (they shouldn't under normal operation)
-        for thread in threads:
-            thread.join()
-    except KeyboardInterrupt:
-        print("\n🛑 Received interrupt signal. Shutting down...")
-        return
-    except Exception as e:
-        print(f"❌ Unexpected error in main thread: {e}")
-        return
+    # Use ThreadPoolExecutor for better thread management
+    with ThreadPoolExecutor(max_workers=len(configs), thread_name_prefix="Listener") as executor:
+        # Submit all listener tasks
+        futures: Dict[str, Future] = {}
+        
+        for config in configs:
+            listener = DatabaseListener(config)
+            future = executor.submit(listener.listen_and_process)
+            futures[config.instance_name] = future
+            print(f"🧵 Started supervised thread for {config.instance_name}")
+        
+        try:
+            # Supervision loop - check for failed threads every 30 seconds
+            while True:
+                time.sleep(30)
+                
+                # Check each future for completion/failure
+                for instance_name, future in list(futures.items()):
+                    if future.done():
+                        try:
+                            # This will raise any exception that occurred in the thread
+                            future.result(timeout=0.1)
+                            print(f"⚠️  [{instance_name}] Thread completed unexpectedly")
+                        except Exception as e:
+                            print(f"💥 [{instance_name}] Thread failed with error: {e}")
+                        
+                        # Restart the failed listener
+                        print(f"🔄 [{instance_name}] Restarting listener thread...")
+                        config = next(c for c in configs if c.instance_name == instance_name)
+                        listener = DatabaseListener(config)
+                        new_future = executor.submit(listener.listen_and_process)
+                        futures[instance_name] = new_future
+                        print(f"✅ [{instance_name}] Thread restarted successfully")
+                        
+        except KeyboardInterrupt:
+            print("\n🛑 Received interrupt signal. Shutting down...")
+            return
+        except Exception as e:
+            print(f"❌ Unexpected error in supervision loop: {e}")
+            return
 
 
 if __name__ == "__main__":

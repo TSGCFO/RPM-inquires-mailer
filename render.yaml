@@ -53,13 +53,4 @@ services:
   startCommand: python listener.py
   autoDeployTrigger: commit
   
-  # Health check configuration
-  healthCheckPath: /
-  
-  # Environment configuration
-  disk:
-    name: data
-    sizeGB: 1
-    mountPath: /data
-  
 version: "1"
