@@ -1,7 +1,22 @@
+import os
 import builtins
 import types
 import json
 import pytest
+
+# Ensure required environment variables are set before importing the module
+for _var in [
+    "PGHOST",
+    "PGDATABASE",
+    "PGUSER",
+    "PGPASSWORD",
+    "TENANT_ID",
+    "CLIENT_ID",
+    "CLIENT_SECRET",
+    "FROM_EMAIL",
+    "TO_EMAIL",
+]:
+    os.environ.setdefault(_var, f"test-{_var.lower()}")
 
 import listener
 
@@ -42,6 +57,7 @@ def test_graph_token_caching(monkeypatch):
 def test_send_email_builds_payload(monkeypatch):
     sent = {}
     def fake_post(url, headers=None, json=None, timeout=0):
+        sent['url'] = url
         sent['headers'] = headers
         sent['payload'] = json
         class Resp:
@@ -59,8 +75,62 @@ def test_send_email_builds_payload(monkeypatch):
         "message": "Hi"
     }
 
-    listener.send_email(record)
+    listener.send_email(record, "sender@test", "recipient@test")
 
     assert sent['headers']['Authorization'] == "Bearer tok"
+    assert sent['url'].endswith("/users/sender@test/sendMail")
     assert sent['payload']['message']['subject'] == "🆕 New Inquiry Received"
+    assert sent['payload']['message']['toRecipients'][0]['emailAddress']['address'] == "recipient@test"
     assert "Foo" in sent['payload']['message']['body']['content']
+
+
+def test_listen_for_db_calls_send_email(monkeypatch):
+    payload = {"id": 1, "name": "Test"}
+    fake_cfg = {
+        "host": "h",
+        "dbname": "db",
+        "user": "u",
+        "password": "p",
+    }
+
+    class FakeNotify:
+        def __init__(self, payload):
+            self.payload = json.dumps(payload)
+
+    class FakeCursor:
+        def execute(self, *a, **kw):
+            pass
+        def __enter__(self):
+            return self
+        def __exit__(self, *exc):
+            return False
+
+    class FakeConn:
+        def cursor(self):
+            return FakeCursor()
+        def notifies(self):
+            yield FakeNotify(payload)
+
+    def fake_connect(*args, **kwargs):
+        assert kwargs["host"] == fake_cfg["host"]
+        assert kwargs["dbname"] == fake_cfg["dbname"]
+        assert kwargs["user"] == fake_cfg["user"]
+        assert kwargs["password"] == fake_cfg["password"]
+        assert kwargs.get("autocommit") is True
+        return FakeConn()
+
+    monkeypatch.setattr(listener.psycopg, "connect", fake_connect)
+    captured = {}
+
+    def fake_send_email(record, from_addr, to_addr):
+        captured["record"] = record
+        captured["from"] = from_addr
+        captured["to"] = to_addr
+
+    monkeypatch.setattr(listener, "send_email", fake_send_email)
+
+    listener.listen_for_db(fake_cfg, "sender@test", "recipient@test")
+
+    assert captured["record"] == payload
+    assert captured["from"] == "sender@test"
+    assert captured["to"] == "recipient@test"
