@@ -66,6 +66,10 @@ def graph_token() -> str:
     _token["exp"] = time.time() + int(body.get("expires_in", 3600))
     return _token["val"]
 
+def get_sendmail_url(from_address: str) -> str:
+    """Build the Microsoft Graph sendMail URL for the given sender address."""
+    return f"https://graph.microsoft.com/v1.0/users/{from_address}/sendMail"
+
 def send_email(record: dict, from_address: str | None = None, to_address: str | None = None):
     """Build a clean, plain-text e-mail from an inquiry row and send it."""
     from_addr = from_address or FROM_EMAIL
