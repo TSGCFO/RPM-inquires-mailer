@@ -97,7 +97,7 @@ def send_email(record: dict, from_address: str | None = None, to_address: str | 
         },
         "saveToSentItems": "false",
     }
-    sendmail_url = f"https://graph.microsoft.com/v1.0/users/{from_addr}/sendMail"
+    sendmail_url = get_sendmail_url(from_addr)
     requests.post(sendmail_url, headers=headers, json=payload, timeout=15).raise_for_status()
 
 # ── PostgreSQL LISTEN / NOTIFY setup ─────────────────────────────────────
