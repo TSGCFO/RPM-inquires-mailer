@@ -1,9 +1,33 @@
-import builtins
-import types
+import importlib
 import json
+import os
 import pytest
 
-import listener
+
+def reload_listener():
+    return importlib.reload(importlib.import_module("listener"))
+
+
+def setup_env(monkeypatch):
+    envs = {
+        "PGHOST": "h1",
+        "PGDATABASE": "d1",
+        "PGUSER": "u1",
+        "PGPASSWORD": "p1",
+        "PGHOST2": "h2",
+        "PGDATABASE2": "d2",
+        "PGUSER2": "u2",
+        "PGPASSWORD2": "p2",
+        "TENANT_ID": "tid",
+        "CLIENT_ID": "cid",
+        "CLIENT_SECRET": "sec",
+        "FROM_EMAIL": "f1@example.com",
+        "TO_EMAIL": "t1@example.com",
+        "FROM_EMAIL2": "f2@example.com",
+        "TO_EMAIL2": "t2@example.com",
+    }
+    for k, v in envs.items():
+        monkeypatch.setenv(k, v)
 
 
 def make_response(token):
@@ -16,6 +40,8 @@ def make_response(token):
 
 
 def test_graph_token_caching(monkeypatch):
+    setup_env(monkeypatch)
+    listener = reload_listener()
     calls = []
     tokens = ["token1", "token2"]
     def fake_post(url, data=None, timeout=0):
@@ -40,6 +66,8 @@ def test_graph_token_caching(monkeypatch):
 
 
 def test_send_email_builds_payload(monkeypatch):
+    setup_env(monkeypatch)
+    listener = reload_listener()
     sent = {}
     def fake_post(url, headers=None, json=None, timeout=0):
         sent['headers'] = headers
@@ -59,7 +87,7 @@ def test_send_email_builds_payload(monkeypatch):
         "message": "Hi"
     }
 
-    listener.send_email(record)
+    listener.send_email(record, "from@example.com", "to@example.com")
 
     assert sent['headers']['Authorization'] == "Bearer tok"
     assert sent['payload']['message']['subject'] == "🆕 New Inquiry Received"
