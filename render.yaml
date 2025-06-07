@@ -1,0 +1,65 @@
+# Multi-Database RPM Inquiries Mailer - Render Blueprint
+# Updated for multi-instance support
+services:
+- type: worker
+  name: RPM-inquires-mailer
+  runtime: python
+  repo: https://github.com/TSGCFO/RPM-inquires-mailer
+  plan: starter
+  envVars:
+  # Instance 1 Environment Variables (Required)
+  - key: PGHOST
+    sync: false
+  - key: PGDATABASE
+    sync: false
+  - key: PGUSER
+    sync: false
+  - key: PGPASSWORD
+    sync: false
+  - key: TENANT_ID
+    sync: false
+  - key: CLIENT_ID
+    sync: false
+  - key: CLIENT_SECRET
+    sync: false
+  - key: FROM_EMAIL
+    sync: false
+  - key: TO_EMAIL
+    sync: false
+  
+  # Instance 2 Environment Variables (Optional - for multi-database support)
+  # Uncomment and configure these in Render dashboard to enable second database
+  - key: PGHOST_2
+    sync: false
+  - key: PGDATABASE_2
+    sync: false
+  - key: PGUSER_2
+    sync: false
+  - key: PGPASSWORD_2
+    sync: false
+  - key: TENANT_ID_2
+    sync: false
+  - key: CLIENT_ID_2
+    sync: false
+  - key: CLIENT_SECRET_2
+    sync: false
+  - key: FROM_EMAIL_2
+    sync: false
+  - key: TO_EMAIL_2
+    sync: false
+  
+  region: ohio
+  buildCommand: pip install -r requirements.txt
+  startCommand: python listener.py
+  autoDeployTrigger: commit
+  
+  # Health check configuration
+  healthCheckPath: /
+  
+  # Environment configuration
+  disk:
+    name: data
+    sizeGB: 1
+    mountPath: /data
+  
+version: "1"
