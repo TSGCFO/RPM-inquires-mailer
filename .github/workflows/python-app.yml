@@ -39,12 +39,12 @@ jobs:
           
       - name: Run tests
         run: |
-          pytest tests/test_listener.py -v --tb=short
+          PYTHONPATH=. pytest tests/test_listener.py -v --tb=short
       
       - name: Test multi-instance configuration loading
         run: |
           # Test that the module can be imported and basic functions work
-          python -c "
+          PYTHONPATH=. python -c "
           import os
           import listener
           
