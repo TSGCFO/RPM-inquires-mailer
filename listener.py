@@ -171,21 +171,46 @@ class DatabaseListener:
             raise
     
     def send_email(self, record: dict) -> None:
-        """Build a clean, plain-text email from an inquiry row and send it."""
-        subject = "🆕 New Inquiry Received"
+        """Build a clean, plain-text email from an inquiry/quote request and send it."""
+        # Determine email type based on available fields
+        is_quote_request = 'company' in record and 'service' in record
         
-        # tidy up values; None -> '--' or 'N/A'
-        body_lines = [
-            f"Name        : {record.get('name', '--')}",
-            f"Email       : {record.get('email', '--')}",
-            f"Phone       : {record.get('phone') or '--'}",
-            f"Subject     : {record.get('subject', '--')}",
-            f"Message     : {record.get('message', '--')}",
-            f"Vehicle ID  : {record.get('vehicle_id') or 'N/A'}",
-            f"Created At  : {record.get('created_at', '--')}",
-            f"Status      : {record.get('status', '--')}",
-        ]
-        body_text = "New Inquiry Received\n" + "-" * 25 + "\n" + "\n".join(body_lines)
+        if is_quote_request:
+            subject = "🆕 New Quote Request Received"
+            header = "New Quote Request Received"
+            
+            # Quote request specific fields
+            body_lines = [
+                f"Name         : {record.get('name', '--')}",
+                f"Email        : {record.get('email', '--')}",
+                f"Phone        : {record.get('phone') or '--'}",
+                f"Company      : {record.get('company', '--')}",
+                f"Service      : {record.get('service', '--')}",
+                f"Message      : {record.get('message', '--')}",
+                f"Consent      : {'Yes' if record.get('consent') else 'No'}",
+                f"Current Ships: {record.get('current_shipments') or 'N/A'}",
+                f"Expected Ships: {record.get('expected_shipments') or 'N/A'}",
+                f"Services     : {record.get('services') or 'N/A'}",
+                f"Created At   : {record.get('created_at', '--')}",
+                f"Status       : {record.get('status', '--')}",
+            ]
+        else:
+            subject = "🆕 New Inquiry Received"
+            header = "New Inquiry Received"
+            
+            # Standard inquiry fields
+            body_lines = [
+                f"Name        : {record.get('name', '--')}",
+                f"Email       : {record.get('email', '--')}",
+                f"Phone       : {record.get('phone') or '--'}",
+                f"Subject     : {record.get('subject', '--')}",
+                f"Message     : {record.get('message', '--')}",
+                f"Vehicle ID  : {record.get('vehicle_id') or 'N/A'}",
+                f"Created At  : {record.get('created_at', '--')}",
+                f"Status      : {record.get('status', '--')}",
+            ]
+        
+        body_text = f"{header}\n" + "-" * len(header) + "\n" + "\n".join(body_lines)
         
         sendmail_url = f"https://graph.microsoft.com/v1.0/users/{self.config.from_email}/sendMail"
         headers = {
@@ -212,18 +237,45 @@ class DatabaseListener:
         """Fetch complete record from database using the ID."""
         try:
             with self.conn.cursor() as cur:
-                cur.execute("SELECT * FROM inquiries WHERE id = %s", (record_id,))
+                # Determine table name based on instance
+                table_name = "quote_requests" if self.config.instance_name == "Instance-2" else "inquiries"
+                
+                cur.execute(f"SELECT * FROM {table_name} WHERE id = %s", (record_id,))
                 row = cur.fetchone()
                 if row:
                     # Convert row to dict using column names
                     columns = [desc[0] for desc in cur.description]
-                    return dict(zip(columns, row))
+                    record = dict(zip(columns, row))
+                    
+                    # For quote_requests, map fields to match email template expectations
+                    if table_name == "quote_requests":
+                        record = self._normalize_quote_request_fields(record)
+                    
+                    return record
                 else:
-                    print(f"⚠️  [{self.config.instance_name}] Record with ID {record_id} not found")
+                    print(f"⚠️  [{self.config.instance_name}] Record with ID {record_id} not found in {table_name}")
                     return None
         except Exception as e:
             print(f"❌ [{self.config.instance_name}] Failed to fetch record {record_id}: {e}")
             return None
+    
+    def _normalize_quote_request_fields(self, record: dict) -> dict:
+        """Normalize quote_requests fields to match email template expectations."""
+        # Map quote_requests fields to standard inquiry format for email template
+        normalized = record.copy()
+        
+        # Add missing fields with appropriate values
+        if 'subject' not in normalized:
+            service = record.get('service', 'Quote Request')
+            normalized['subject'] = f"Quote Request - {service}"
+        
+        if 'vehicle_id' not in normalized:
+            # For quote requests, we can use service type or company info
+            company = record.get('company', '')
+            service = record.get('service', '')
+            normalized['vehicle_id'] = f"{company} - {service}" if company and service else 'N/A'
+        
+        return normalized
 
     def listen_and_process(self) -> None:
         """Listen for new records and send notification emails."""
