@@ -42,7 +42,6 @@ FROM_EMAIL    = os.getenv("FROM_EMAIL")     # fateh@rpmautosales.ca
 TO_EMAIL      = os.getenv("TO_EMAIL")       # info@rpmautosales.ca
 
 TOKEN_URL    = f"https://login.microsoftonline.com/{TENANT_ID}/oauth2/v2.0/token"
-SENDMAIL_URL = f"https://graph.microsoft.com/v1.0/users/{FROM_EMAIL}/sendMail"
 
 _token = {"val": None, "exp": 0}
 
@@ -67,8 +66,10 @@ def graph_token() -> str:
     _token["exp"] = time.time() + int(body.get("expires_in", 3600))
     return _token["val"]
 
-def send_email(record: dict):
+def send_email(record: dict, from_address: str | None = None, to_address: str | None = None):
     """Build a clean, plain-text e-mail from an inquiry row and send it."""
+    from_addr = from_address or FROM_EMAIL
+    to_addr = to_address or TO_EMAIL
     subject = "🆕 New Inquiry Received"
 
     # tidy up values; None -> '--' or 'N/A'
@@ -92,22 +93,23 @@ def send_email(record: dict):
         "message": {
             "subject": subject,
             "body": {"contentType": "Text", "content": body_text},
-            "toRecipients": [{"emailAddress": {"address": TO_EMAIL}}],
+            "toRecipients": [{"emailAddress": {"address": to_addr}}],
         },
         "saveToSentItems": "false",
     }
-    requests.post(SENDMAIL_URL, headers=headers, json=payload, timeout=15).raise_for_status()
+    sendmail_url = f"https://graph.microsoft.com/v1.0/users/{from_addr}/sendMail"
+    requests.post(sendmail_url, headers=headers, json=payload, timeout=15).raise_for_status()
 
 # ── PostgreSQL LISTEN / NOTIFY setup ─────────────────────────────────────
 
-def main() -> None:
-    """Listen for new records and send notification e-mails."""
+def listen_for_db(cfg: dict, from_address: str | None = None, to_address: str | None = None) -> None:
+    """Listen for NOTIFY events and send emails for each payload."""
     conn = psycopg.connect(
-        host=os.getenv("PGHOST"),
-        dbname=os.getenv("PGDATABASE"),
-        user=os.getenv("PGUSER"),
-        password=os.getenv("PGPASSWORD"),
-        autocommit=True,  # LISTEN works best with autocommit
+        host=cfg.get("host"),
+        dbname=cfg.get("dbname"),
+        user=cfg.get("user"),
+        password=cfg.get("password"),
+        autocommit=True,
     )
 
     with conn.cursor() as cur:
@@ -118,10 +120,21 @@ def main() -> None:
     for notify in conn.notifies():  # blocks until a NOTIFY is received
         try:
             record = json.loads(notify.payload)
-            send_email(record)
+            send_email(record, from_address, to_address)
             print("📨  Email sent for inquiry id:", record.get("id"))
         except Exception as exc:
             print("⚠️  Failed to handle notification:", exc)
+
+
+def main() -> None:
+    """Listen for new records using environment configuration."""
+    cfg = {
+        "host": os.getenv("PGHOST"),
+        "dbname": os.getenv("PGDATABASE"),
+        "user": os.getenv("PGUSER"),
+        "password": os.getenv("PGPASSWORD"),
+    }
+    listen_for_db(cfg, FROM_EMAIL, TO_EMAIL)
 
 
 if __name__ == "__main__":
