@@ -1,5 +1,5 @@
 # Multi-Database RPM Inquiries Mailer - Render Blueprint
-# Updated for multi-instance support
+# Supports concurrent monitoring of multiple PostgreSQL databases with unique notification channels
 services:
 - type: worker
   name: RPM-inquires-mailer
@@ -7,28 +7,51 @@ services:
   repo: https://github.com/TSGCFO/RPM-inquires-mailer
   plan: starter
   envVars:
-  # Instance 1 Environment Variables (Required)
+  
+  # =============================================================================
+  # INSTANCE 1 (Required) - Primary Database Configuration
+  # Monitors 'inquiries' table with 'new_record_channel' notifications
+  # =============================================================================
+  
+  # Database Connection (Preferred: Use DATABASE_URL connection string)
+  - key: DATABASE_URL
+    sync: false
+    
+  # Alternative: Individual Database Variables (only if DATABASE_URL not used)
   - key: PGHOST
     sync: false
-  - key: PGDATABASE
+  - key: PGDATABASE  
     sync: false
   - key: PGUSER
     sync: false
   - key: PGPASSWORD
     sync: false
+    
+  # Microsoft Graph API Configuration - Tenant 1
   - key: TENANT_ID
     sync: false
   - key: CLIENT_ID
     sync: false
   - key: CLIENT_SECRET
     sync: false
+    
+  # Email Configuration - Instance 1
   - key: FROM_EMAIL
     sync: false
   - key: TO_EMAIL
     sync: false
   
-  # Instance 2 Environment Variables (Optional - for multi-database support)
-  # Uncomment and configure these in Render dashboard to enable second database
+  # =============================================================================
+  # INSTANCE 2 (Optional) - Secondary Database Configuration  
+  # Monitors 'quote_requests' table with 'quote_request_channel' notifications
+  # Configure these variables in Render dashboard to enable multi-database support
+  # =============================================================================
+  
+  # Database Connection (Preferred: Use DATABASE_URL_2 connection string)
+  - key: DATABASE_URL_2
+    sync: false
+    
+  # Alternative: Individual Database Variables (only if DATABASE_URL_2 not used)
   - key: PGHOST_2
     sync: false
   - key: PGDATABASE_2
@@ -37,20 +60,30 @@ services:
     sync: false
   - key: PGPASSWORD_2
     sync: false
+    
+  # Microsoft Graph API Configuration - Tenant 2
   - key: TENANT_ID_2
     sync: false
   - key: CLIENT_ID_2
     sync: false
   - key: CLIENT_SECRET_2
     sync: false
+    
+  # Email Configuration - Instance 2
   - key: FROM_EMAIL_2
     sync: false
   - key: TO_EMAIL_2
     sync: false
   
+  # =============================================================================
+  # Deployment Configuration
+  # =============================================================================
   region: ohio
-  buildCommand: pip install -r requirements.txt
+  buildCommand: pip install -r requirements.txt python-dotenv
   startCommand: python listener.py
   autoDeployTrigger: commit
+  
+  # Health Check Configuration
+  healthCheckPath: /
   
 version: "1"

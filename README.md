@@ -61,13 +61,19 @@ The system automatically detects and starts listeners for all configured instanc
 
 ## Environment Variables
 
+### 🔑 Database Connection Options
+You can configure database connections using either:
+1. **Connection Strings (Recommended)**: `DATABASE_URL` and `DATABASE_URL_2`
+2. **Individual Variables**: `PGHOST`, `PGDATABASE`, `PGUSER`, `PGPASSWORD` (and `_2` variants)
+
 ### Required for Instance 1
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `PGHOST` | PostgreSQL host | `localhost` |
-| `PGDATABASE` | Database name | `production_db` |
-| `PGUSER` | Database username | `app_user` |
-| `PGPASSWORD` | Database password | `secure_password` |
+| `DATABASE_URL` | PostgreSQL connection string (preferred) | `postgresql://user:pass@host:5432/dbname?sslmode=require` |
+| `PGHOST` | PostgreSQL host (if not using DATABASE_URL) | `localhost` |
+| `PGDATABASE` | Database name (if not using DATABASE_URL) | `production_db` |
+| `PGUSER` | Database username (if not using DATABASE_URL) | `app_user` |
+| `PGPASSWORD` | Database password (if not using DATABASE_URL) | `secure_password` |
 | `TENANT_ID` | Microsoft Graph tenant ID | `12345678-1234-1234-1234-123456789012` |
 | `CLIENT_ID` | Microsoft Graph client ID | `87654321-4321-4321-4321-210987654321` |
 | `CLIENT_SECRET` | Microsoft Graph client secret | `your-client-secret` |
@@ -75,7 +81,18 @@ The system automatically detects and starts listeners for all configured instanc
 | `TO_EMAIL` | Email recipient address | `alerts@company.com` |
 
 ### Optional for Instance 2
-Add `_2` suffix to all variable names above for the second instance.
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `DATABASE_URL_2` | PostgreSQL connection string for second database | `postgresql://user:pass@host:5432/dbname2?sslmode=require` |
+| `PGHOST_2` | PostgreSQL host (if not using DATABASE_URL_2) | `localhost` |
+| `PGDATABASE_2` | Database name (if not using DATABASE_URL_2) | `secondary_db` |
+| `PGUSER_2` | Database username (if not using DATABASE_URL_2) | `app_user` |
+| `PGPASSWORD_2` | Database password (if not using DATABASE_URL_2) | `secure_password` |
+| `TENANT_ID_2` | Microsoft Graph tenant ID for second instance | `87654321-4321-4321-4321-210987654321` |
+| `CLIENT_ID_2` | Microsoft Graph client ID for second instance | `12345678-1234-1234-1234-123456789012` |
+| `CLIENT_SECRET_2` | Microsoft Graph client secret for second instance | `your-second-client-secret` |
+| `FROM_EMAIL_2` | Email sender address for second instance | `notifications2@company.com` |
+| `TO_EMAIL_2` | Email recipient address for second instance | `alerts2@company.com` |
 
 ## Deployment
 
@@ -109,24 +126,51 @@ python listener.py
 ```
 
 ## Database Setup
-Each monitored database needs a trigger to send notifications:
 
+Each monitored database needs triggers to send notifications. **IMPORTANT**: Each instance uses a unique notification channel to prevent cross-database interference.
+
+### Instance 1 Database Setup (inquiries table)
 ```sql
--- Create notification function
+-- Create notification function for inquiries (Instance 1)
 CREATE OR REPLACE FUNCTION notify_new_inquiry()
 RETURNS TRIGGER AS $$
 BEGIN
-    PERFORM pg_notify('new_record_channel', row_to_json(NEW)::text);
+    -- Use unique channel: new_record_channel
+    PERFORM pg_notify('new_record_channel', json_build_object('id', NEW.id)::text);
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
--- Create trigger on your inquiries table
+-- Create trigger on inquiries table
 CREATE TRIGGER inquiry_notification_trigger
     AFTER INSERT ON inquiries
     FOR EACH ROW
     EXECUTE FUNCTION notify_new_inquiry();
 ```
+
+### Instance 2 Database Setup (quote_requests table)
+```sql
+-- Create notification function for quote requests (Instance 2)
+CREATE OR REPLACE FUNCTION notify_new_quote_request()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Use unique channel: quote_request_channel
+    PERFORM pg_notify('quote_request_channel', json_build_object('id', NEW.id)::text);
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create trigger on quote_requests table
+CREATE TRIGGER quote_request_notification_trigger
+    AFTER INSERT ON quote_requests
+    FOR EACH ROW
+    EXECUTE FUNCTION notify_new_quote_request();
+```
+
+### 🔧 Thread Safety Notes
+- Each instance creates database connections **within worker threads** for reliability
+- Separate connections are used for LISTEN operations and data fetching
+- This prevents PostgreSQL connection interference in multi-threaded environments
 
 ## Microsoft Graph Setup
 1. Register an application in Azure Portal for each tenant
@@ -146,13 +190,35 @@ pytest tests/test_listener.py -v
 ## Monitoring
 The application provides detailed logging for each instance:
 ```
-✅ Loaded configuration for Instance-1
 ✅ Loaded configuration for Instance-2
-🚀 Starting 2 database listener(s)...
+✅ Loaded configuration for Instance-1
+🚀 Starting 2 database listener(s) with supervision...
+🧵 Started supervised thread for Instance-1
+🧵 Started supervised thread for Instance-2
+🔧 [Instance-1] Creating database connection in worker thread...
+🔗 [Instance-1] Connected via connection string to database: rpm_auto
 🔔 [Instance-1] Listening on channel new_record_channel...
-🔔 [Instance-2] Listening on channel new_record_channel...
-📨 [Instance-1] Email sent to recipient1@domain.com for inquiry id: 123
+🔧 [Instance-2] Creating database connection in worker thread...
+🔗 [Instance-2] Connected via connection string to database: tsg_fulfillment
+🔔 [Instance-2] Listening on channel quote_request_channel...
+📥 [Instance-2] Received notification on quote_request_channel: {"id" : 42}
+📋 [Instance-2] Fetching full record for ID: 42
+📨 [Instance-2] Email sent successfully to notifications@tsgfulfillment.com for record id: 42
 ```
+
+### 🚨 Troubleshooting Common Issues
+
+**Issue**: Notifications received but emails not sent
+- **Cause**: Database connection thread safety
+- **Solution**: Ensure connections are created within worker threads (already implemented)
+
+**Issue**: Cross-database notification interference  
+- **Cause**: Multiple instances using same notification channel
+- **Solution**: Use unique channels (`new_record_channel` vs `quote_request_channel`)
+
+**Issue**: Connection errors in threaded environment
+- **Cause**: Shared connections between LISTEN and data operations  
+- **Solution**: Use separate connections for notifications and data fetching (already implemented)
 
 ## Documentation
 - **[Multi-Database Setup Guide](MULTI_DATABASE_SETUP.md)** - Comprehensive setup instructions

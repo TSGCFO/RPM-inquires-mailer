@@ -11,7 +11,7 @@ This is a multi-database email notification service that listens for PostgreSQL 
 - **Multi-instance Python service** (`listener.py`) - Main application supporting concurrent database monitoring
 - **Threaded architecture** - Each database/email pair runs in its own thread for isolation and resilience
 - **Microsoft Graph integration** - Uses OAuth2 client credentials flow with per-tenant token caching
-- **PostgreSQL event listening** - Uses `psycopg` library to listen on `new_record_channel` for multiple databases
+- **PostgreSQL event listening** - Uses `psycopg` library with unique channels per instance (`new_record_channel` for Instance 1, `quote_request_channel` for Instance 2)
 - **Configurable email formatting** - Converts inquiry records to plain-text emails with instance-specific routing
 
 ### Core Components
@@ -55,14 +55,16 @@ pytest tests/test_listener.py  # specific test file
 ## Required Environment Variables
 
 ### Instance 1 (Required for backward compatibility)
-- **Database**: `PGHOST`, `PGDATABASE`, `PGUSER`, `PGPASSWORD`
+- **Database**: `DATABASE_URL` (preferred) OR `PGHOST`, `PGDATABASE`, `PGUSER`, `PGPASSWORD`
 - **Microsoft Graph**: `TENANT_ID`, `CLIENT_ID`, `CLIENT_SECRET`
 - **Email addresses**: `FROM_EMAIL`, `TO_EMAIL`
+- **Notification Channel**: `new_record_channel` (for inquiries table)
 
 ### Instance 2 (Optional for multi-database support)
-- **Database**: `PGHOST_2`, `PGDATABASE_2`, `PGUSER_2`, `PGPASSWORD_2`
+- **Database**: `DATABASE_URL_2` (preferred) OR `PGHOST_2`, `PGDATABASE_2`, `PGUSER_2`, `PGPASSWORD_2`
 - **Microsoft Graph**: `TENANT_ID_2`, `CLIENT_ID_2`, `CLIENT_SECRET_2`
 - **Email addresses**: `FROM_EMAIL_2`, `TO_EMAIL_2`
+- **Notification Channel**: `quote_request_channel` (for quote_requests table)
 
 The system automatically detects which instances are configured and starts the appropriate number of listener threads.
 
@@ -70,12 +72,30 @@ The system automatically detects which instances are configured and starts the a
 
 - `psycopg[binary]>=3.1` - PostgreSQL adapter with LISTEN/NOTIFY support
 - `requests>=2.31` - HTTP client for Microsoft Graph API calls
+- `python-dotenv>=1.0` - Environment variable loading from .env files
 - `pytest>=7.0` - Test framework (dev dependency)
 
 ## Development Best Practices
 
 - Always install dependencies in a virtual environment
 - Always update/create tests, and documentation whenever there a changes/updates to the codebase, or when new features are introduced.
+
+## Critical Architecture Notes
+
+### Thread Safety Requirements
+- **Database connections MUST be created within worker threads** - PostgreSQL LISTEN/NOTIFY doesn't work reliably when connections are created in main thread and used in worker threads
+- **Separate connections for different operations** - Use dedicated connections for LISTEN operations and separate connections for data fetching to prevent interference
+- **Unique notification channels** - Each instance must use different channel names to prevent cross-database notification interference
+
+### Notification Channel Architecture
+- **Instance 1**: Uses `new_record_channel` for `inquiries` table notifications
+- **Instance 2**: Uses `quote_request_channel` for `quote_requests` table notifications
+- **Channel isolation**: Prevents notifications from one database affecting another database's listener
+
+### Known Issues & Solutions
+- **Silent email failures in threads**: Fixed by creating connections within worker threads
+- **Cross-database interference**: Fixed by using unique notification channels per instance
+- **Connection blocking**: Fixed by using separate connections for LISTEN vs data operations
 
 ## Development Workflow Guidelines
 
@@ -84,3 +104,5 @@ The system automatically detects which instances are configured and starts the a
 ## Developer Workflow Notes
 
 - Before committing changes or pushing commits run all tests. Investigate the test results and fix any bugs, errors or issues.
+- **Thread safety testing**: Always test multi-instance functionality in threaded environment
+- **Connection string support**: Prefer `DATABASE_URL` format over individual database variables
