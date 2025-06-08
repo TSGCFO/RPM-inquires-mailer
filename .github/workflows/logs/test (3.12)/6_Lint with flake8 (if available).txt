@@ -1,0 +1,13 @@
+﻿2025-06-07T14:04:49.1105669Z ##[group]Run # Stop on syntax errors or undefined names
+2025-06-07T14:04:49.1106094Z [36;1m# Stop on syntax errors or undefined names[0m
+2025-06-07T14:04:49.1106549Z [36;1mpython -m flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics || true[0m
+2025-06-07T14:04:49.1159190Z shell: /usr/bin/bash -e {0}
+2025-06-07T14:04:49.1159424Z env:
+2025-06-07T14:04:49.1159668Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.10/x64
+2025-06-07T14:04:49.1160073Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.10/x64/lib/pkgconfig
+2025-06-07T14:04:49.1160461Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.10/x64
+2025-06-07T14:04:49.1160806Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.10/x64
+2025-06-07T14:04:49.1161150Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.10/x64
+2025-06-07T14:04:49.1161667Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.10/x64/lib
+2025-06-07T14:04:49.1161957Z ##[endgroup]
+2025-06-07T14:04:49.1336353Z /opt/hostedtoolcache/Python/3.12.10/x64/bin/python: No module named flake8

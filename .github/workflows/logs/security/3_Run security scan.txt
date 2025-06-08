@@ -1,0 +1,18 @@
+﻿2025-06-07T14:04:42.2019396Z ##[group]Run # Check for secrets in code (basic check)
+2025-06-07T14:04:42.2020160Z [36;1m# Check for secrets in code (basic check)[0m
+2025-06-07T14:04:42.2021116Z [36;1mif grep -r "password\|secret\|key" --include="*.py" . | grep -v "# " | grep -v "test" | grep -v "example" || true; then[0m
+2025-06-07T14:04:42.2022142Z [36;1m  echo "⚠️  Found potential hardcoded secrets - please review"[0m
+2025-06-07T14:04:42.2022791Z [36;1melse[0m
+2025-06-07T14:04:42.2023261Z [36;1m  echo "✅ No obvious hardcoded secrets found"[0m
+2025-06-07T14:04:42.2023816Z [36;1mfi[0m
+2025-06-07T14:04:42.2198646Z shell: /usr/bin/bash -e {0}
+2025-06-07T14:04:42.2199170Z ##[endgroup]
+2025-06-07T14:04:42.2310302Z ./listener.py:    pg_password: str
+2025-06-07T14:04:42.2311156Z ./listener.py:    client_secret: str
+2025-06-07T14:04:42.2311794Z ./listener.py:        pg_password=os.getenv("PGPASSWORD"),
+2025-06-07T14:04:42.2312736Z ./listener.py:        client_secret=os.getenv("CLIENT_SECRET"),
+2025-06-07T14:04:42.2314048Z ./listener.py:            pg_password=os.getenv("PGPASSWORD_2"),
+2025-06-07T14:04:42.2315338Z ./listener.py:            client_secret=os.getenv("CLIENT_SECRET_2"),
+2025-06-07T14:04:42.2316778Z ./listener.py:            "client_secret": config.client_secret,
+2025-06-07T14:04:42.2317824Z ./listener.py:                ***
+2025-06-07T14:04:42.2318605Z ⚠️  Found potential hardcoded secrets - please review

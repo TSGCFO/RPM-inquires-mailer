@@ -1,0 +1,131 @@
+﻿2025-06-07T14:04:41.0961951Z Current runner version: '2.325.0'
+2025-06-07T14:04:41.0985563Z ##[group]Runner Image Provisioner
+2025-06-07T14:04:41.0986627Z Hosted Compute Agent
+2025-06-07T14:04:41.0987201Z Version: 20250508.323
+2025-06-07T14:04:41.0987788Z Commit: 81b259f29879f73b4213d199e42d8c3465dae986
+2025-06-07T14:04:41.0988514Z Build Date: 2025-05-08T19:40:08Z
+2025-06-07T14:04:41.0989069Z ##[endgroup]
+2025-06-07T14:04:41.0989619Z ##[group]Operating System
+2025-06-07T14:04:41.0990216Z Ubuntu
+2025-06-07T14:04:41.0990687Z 24.04.2
+2025-06-07T14:04:41.0991132Z LTS
+2025-06-07T14:04:41.0991622Z ##[endgroup]
+2025-06-07T14:04:41.0992156Z ##[group]Runner Image
+2025-06-07T14:04:41.0992694Z Image: ubuntu-24.04
+2025-06-07T14:04:41.0993281Z Version: 20250511.1.0
+2025-06-07T14:04:41.0994286Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20250511.1/images/ubuntu/Ubuntu2404-Readme.md
+2025-06-07T14:04:41.0995826Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20250511.1
+2025-06-07T14:04:41.0997220Z ##[endgroup]
+2025-06-07T14:04:41.0998416Z ##[group]GITHUB_TOKEN Permissions
+2025-06-07T14:04:41.1000214Z Contents: read
+2025-06-07T14:04:41.1000846Z Metadata: read
+2025-06-07T14:04:41.1001413Z Packages: read
+2025-06-07T14:04:41.1001929Z ##[endgroup]
+2025-06-07T14:04:41.1004790Z Secret source: Actions
+2025-06-07T14:04:41.1005532Z Prepare workflow directory
+2025-06-07T14:04:41.1316357Z Prepare all required actions
+2025-06-07T14:04:41.1353366Z Getting action download info
+2025-06-07T14:04:41.2964324Z ##[group]Download immutable action package 'actions/checkout@v4'
+2025-06-07T14:04:41.2965397Z Version: 4.2.2
+2025-06-07T14:04:41.2966810Z Digest: sha256:ccb2698953eaebd21c7bf6268a94f9c26518a7e38e27e0b83c1fe1ad049819b1
+2025-06-07T14:04:41.2968112Z Source commit SHA: 11bd71901bbe5b1630ceea73d27597364c9af683
+2025-06-07T14:04:41.2968904Z ##[endgroup]
+2025-06-07T14:04:41.4478671Z Complete job name: security
+2025-06-07T14:04:41.5181079Z ##[group]Run actions/checkout@v4
+2025-06-07T14:04:41.5181920Z with:
+2025-06-07T14:04:41.5182376Z   repository: TSGCFO/RPM-inquires-mailer
+2025-06-07T14:04:41.5183072Z   token: ***
+2025-06-07T14:04:41.5183459Z   ssh-strict: true
+2025-06-07T14:04:41.5183865Z   ssh-user: git
+2025-06-07T14:04:41.5184287Z   persist-credentials: true
+2025-06-07T14:04:41.5184744Z   clean: true
+2025-06-07T14:04:41.5185162Z   sparse-checkout-cone-mode: true
+2025-06-07T14:04:41.5185690Z   fetch-depth: 1
+2025-06-07T14:04:41.5186257Z   fetch-tags: false
+2025-06-07T14:04:41.5186668Z   show-progress: true
+2025-06-07T14:04:41.5187082Z   lfs: false
+2025-06-07T14:04:41.5187467Z   submodules: false
+2025-06-07T14:04:41.5187875Z   set-safe-directory: true
+2025-06-07T14:04:41.5188584Z ##[endgroup]
+2025-06-07T14:04:41.6259737Z Syncing repository: TSGCFO/RPM-inquires-mailer
+2025-06-07T14:04:41.6261470Z ##[group]Getting Git version info
+2025-06-07T14:04:41.6262362Z Working directory is '/home/runner/work/RPM-inquires-mailer/RPM-inquires-mailer'
+2025-06-07T14:04:41.6263481Z [command]/usr/bin/git version
+2025-06-07T14:04:41.6312659Z git version 2.49.0
+2025-06-07T14:04:41.6346495Z ##[endgroup]
+2025-06-07T14:04:41.6360043Z Temporarily overriding HOME='/home/runner/work/_temp/d2db443f-c87e-4771-bac8-e9c27c41a023' before making global git config changes
+2025-06-07T14:04:41.6361429Z Adding repository directory to the temporary git global config as a safe directory
+2025-06-07T14:04:41.6365012Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/RPM-inquires-mailer/RPM-inquires-mailer
+2025-06-07T14:04:41.6398336Z Deleting the contents of '/home/runner/work/RPM-inquires-mailer/RPM-inquires-mailer'
+2025-06-07T14:04:41.6402072Z ##[group]Initializing the repository
+2025-06-07T14:04:41.6406915Z [command]/usr/bin/git init /home/runner/work/RPM-inquires-mailer/RPM-inquires-mailer
+2025-06-07T14:04:41.6493491Z hint: Using 'master' as the name for the initial branch. This default branch name
+2025-06-07T14:04:41.6494642Z hint: is subject to change. To configure the initial branch name to use in all
+2025-06-07T14:04:41.6495798Z hint: of your new repositories, which will suppress this warning, call:
+2025-06-07T14:04:41.6496725Z hint:
+2025-06-07T14:04:41.6497245Z hint: 	git config --global init.defaultBranch <name>
+2025-06-07T14:04:41.6498032Z hint:
+2025-06-07T14:04:41.6498929Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2025-06-07T14:04:41.6499858Z hint: 'development'. The just-created branch can be renamed via this command:
+2025-06-07T14:04:41.6500597Z hint:
+2025-06-07T14:04:41.6501023Z hint: 	git branch -m <name>
+2025-06-07T14:04:41.6501892Z Initialized empty Git repository in /home/runner/work/RPM-inquires-mailer/RPM-inquires-mailer/.git/
+2025-06-07T14:04:41.6509372Z [command]/usr/bin/git remote add origin https://github.com/TSGCFO/RPM-inquires-mailer
+2025-06-07T14:04:41.6539828Z ##[endgroup]
+2025-06-07T14:04:41.6540556Z ##[group]Disabling automatic garbage collection
+2025-06-07T14:04:41.6543578Z [command]/usr/bin/git config --local gc.auto 0
+2025-06-07T14:04:41.6572465Z ##[endgroup]
+2025-06-07T14:04:41.6573759Z ##[group]Setting up auth
+2025-06-07T14:04:41.6580164Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2025-06-07T14:04:41.6610351Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2025-06-07T14:04:41.6898766Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2025-06-07T14:04:41.6932608Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2025-06-07T14:04:41.7162504Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2025-06-07T14:04:41.7203724Z ##[endgroup]
+2025-06-07T14:04:41.7204703Z ##[group]Fetching the repository
+2025-06-07T14:04:41.7213032Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +0cc2b786fe7ab6892f397514c69ec33fbbf36e6b:refs/remotes/origin/code
+2025-06-07T14:04:42.1571187Z From https://github.com/TSGCFO/RPM-inquires-mailer
+2025-06-07T14:04:42.1573936Z  * [new ref]         0cc2b786fe7ab6892f397514c69ec33fbbf36e6b -> origin/code
+2025-06-07T14:04:42.1596580Z ##[endgroup]
+2025-06-07T14:04:42.1597921Z ##[group]Determining the checkout info
+2025-06-07T14:04:42.1599450Z ##[endgroup]
+2025-06-07T14:04:42.1604606Z [command]/usr/bin/git sparse-checkout disable
+2025-06-07T14:04:42.1644408Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2025-06-07T14:04:42.1672645Z ##[group]Checking out the ref
+2025-06-07T14:04:42.1675739Z [command]/usr/bin/git checkout --progress --force -B code refs/remotes/origin/code
+2025-06-07T14:04:42.1725879Z Switched to a new branch 'code'
+2025-06-07T14:04:42.1729151Z branch 'code' set up to track 'origin/code'.
+2025-06-07T14:04:42.1734605Z ##[endgroup]
+2025-06-07T14:04:42.1767543Z [command]/usr/bin/git log -1 --format=%H
+2025-06-07T14:04:42.1788472Z 0cc2b786fe7ab6892f397514c69ec33fbbf36e6b
+2025-06-07T14:04:42.2019414Z ##[group]Run # Check for secrets in code (basic check)
+2025-06-07T14:04:42.2020164Z [36;1m# Check for secrets in code (basic check)[0m
+2025-06-07T14:04:42.2021120Z [36;1mif grep -r "password\|secret\|key" --include="*.py" . | grep -v "# " | grep -v "test" | grep -v "example" || true; then[0m
+2025-06-07T14:04:42.2022147Z [36;1m  echo "⚠️  Found potential hardcoded secrets - please review"[0m
+2025-06-07T14:04:42.2022795Z [36;1melse[0m
+2025-06-07T14:04:42.2023265Z [36;1m  echo "✅ No obvious hardcoded secrets found"[0m
+2025-06-07T14:04:42.2023819Z [36;1mfi[0m
+2025-06-07T14:04:42.2198665Z shell: /usr/bin/bash -e {0}
+2025-06-07T14:04:42.2199173Z ##[endgroup]
+2025-06-07T14:04:42.2310326Z ./listener.py:    pg_password: str
+2025-06-07T14:04:42.2311166Z ./listener.py:    client_secret: str
+2025-06-07T14:04:42.2311798Z ./listener.py:        pg_password=os.getenv("PGPASSWORD"),
+2025-06-07T14:04:42.2312740Z ./listener.py:        client_secret=os.getenv("CLIENT_SECRET"),
+2025-06-07T14:04:42.2314105Z ./listener.py:            pg_password=os.getenv("PGPASSWORD_2"),
+2025-06-07T14:04:42.2315345Z ./listener.py:            client_secret=os.getenv("CLIENT_SECRET_2"),
+2025-06-07T14:04:42.2316790Z ./listener.py:            "client_secret": config.client_secret,
+2025-06-07T14:04:42.2317829Z ./listener.py:                ***
+2025-06-07T14:04:42.2318610Z ⚠️  Found potential hardcoded secrets - please review
+2025-06-07T14:04:42.2409315Z Post job cleanup.
+2025-06-07T14:04:42.3328389Z [command]/usr/bin/git version
+2025-06-07T14:04:42.3377241Z git version 2.49.0
+2025-06-07T14:04:42.3421019Z Temporarily overriding HOME='/home/runner/work/_temp/b9c15dd5-b6ea-463d-967f-cce398a0f718' before making global git config changes
+2025-06-07T14:04:42.3422407Z Adding repository directory to the temporary git global config as a safe directory
+2025-06-07T14:04:42.3426416Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/RPM-inquires-mailer/RPM-inquires-mailer
+2025-06-07T14:04:42.3461021Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2025-06-07T14:04:42.3492361Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2025-06-07T14:04:42.3713757Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2025-06-07T14:04:42.3733285Z http.https://github.com/.extraheader
+2025-06-07T14:04:42.3747013Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2025-06-07T14:04:42.3777402Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2025-06-07T14:04:42.4102568Z Cleaning up orphan processes

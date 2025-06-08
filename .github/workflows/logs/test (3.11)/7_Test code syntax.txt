@@ -1,0 +1,11 @@
+﻿2025-06-07T14:04:49.8635577Z ##[group]Run python -m py_compile listener.py
+2025-06-07T14:04:49.8635929Z [36;1mpython -m py_compile listener.py[0m
+2025-06-07T14:04:49.8687247Z shell: /usr/bin/bash -e {0}
+2025-06-07T14:04:49.8687477Z env:
+2025-06-07T14:04:49.8687722Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.12/x64
+2025-06-07T14:04:49.8688127Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.12/x64/lib/pkgconfig
+2025-06-07T14:04:49.8688518Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.12/x64
+2025-06-07T14:04:49.8688862Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.12/x64
+2025-06-07T14:04:49.8689208Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.12/x64
+2025-06-07T14:04:49.8689553Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.12/x64/lib
+2025-06-07T14:04:49.8689853Z ##[endgroup]

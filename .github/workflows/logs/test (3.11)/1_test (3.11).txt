@@ -1,0 +1,266 @@
+﻿2025-06-07T14:04:41.2740572Z Current runner version: '2.325.0'
+2025-06-07T14:04:41.2764172Z ##[group]Runner Image Provisioner
+2025-06-07T14:04:41.2765051Z Hosted Compute Agent
+2025-06-07T14:04:41.2765590Z Version: 20250508.323
+2025-06-07T14:04:41.2766296Z Commit: 81b259f29879f73b4213d199e42d8c3465dae986
+2025-06-07T14:04:41.2767023Z Build Date: 2025-05-08T19:40:08Z
+2025-06-07T14:04:41.2767673Z ##[endgroup]
+2025-06-07T14:04:41.2768269Z ##[group]Operating System
+2025-06-07T14:04:41.2768819Z Ubuntu
+2025-06-07T14:04:41.2769327Z 24.04.2
+2025-06-07T14:04:41.2769878Z LTS
+2025-06-07T14:04:41.2770377Z ##[endgroup]
+2025-06-07T14:04:41.2770943Z ##[group]Runner Image
+2025-06-07T14:04:41.2771567Z Image: ubuntu-24.04
+2025-06-07T14:04:41.2772115Z Version: 20250511.1.0
+2025-06-07T14:04:41.2773609Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20250511.1/images/ubuntu/Ubuntu2404-Readme.md
+2025-06-07T14:04:41.2775270Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20250511.1
+2025-06-07T14:04:41.2776349Z ##[endgroup]
+2025-06-07T14:04:41.2777489Z ##[group]GITHUB_TOKEN Permissions
+2025-06-07T14:04:41.2779409Z Contents: read
+2025-06-07T14:04:41.2779992Z Metadata: read
+2025-06-07T14:04:41.2780586Z Packages: read
+2025-06-07T14:04:41.2781170Z ##[endgroup]
+2025-06-07T14:04:41.2784362Z Secret source: Actions
+2025-06-07T14:04:41.2785123Z Prepare workflow directory
+2025-06-07T14:04:41.3106220Z Prepare all required actions
+2025-06-07T14:04:41.3143895Z Getting action download info
+2025-06-07T14:04:41.5129584Z ##[group]Download immutable action package 'actions/checkout@v4'
+2025-06-07T14:04:41.5130625Z Version: 4.2.2
+2025-06-07T14:04:41.5131701Z Digest: sha256:ccb2698953eaebd21c7bf6268a94f9c26518a7e38e27e0b83c1fe1ad049819b1
+2025-06-07T14:04:41.5133115Z Source commit SHA: 11bd71901bbe5b1630ceea73d27597364c9af683
+2025-06-07T14:04:41.5133881Z ##[endgroup]
+2025-06-07T14:04:41.5847976Z ##[group]Download immutable action package 'actions/setup-python@v4'
+2025-06-07T14:04:41.5848932Z Version: 4.9.1
+2025-06-07T14:04:41.5849753Z Digest: sha256:f03e505388af670b5a108629e0ba26befc08d5c62b41f46146a45fe29ae509a5
+2025-06-07T14:04:41.5850714Z Source commit SHA: 7f4fc3e22c37d6ff65e88745f38bd3157c663f7c
+2025-06-07T14:04:41.5851474Z ##[endgroup]
+2025-06-07T14:04:41.9374755Z ##[group]Download immutable action package 'actions/cache@v3'
+2025-06-07T14:04:41.9375447Z Version: 3.4.3
+2025-06-07T14:04:41.9376105Z Digest: sha256:912f76fb11db1ca09ae23248a39eb86e79ea0f0f6e183d9cb96d0b778eeea4e2
+2025-06-07T14:04:41.9376971Z Source commit SHA: 2f8e54208210a422b2efd51efaa6bd6d7ca8920f
+2025-06-07T14:04:41.9377582Z ##[endgroup]
+2025-06-07T14:04:42.1478467Z Complete job name: test (3.11)
+2025-06-07T14:04:42.2145702Z ##[group]Run actions/checkout@v4
+2025-06-07T14:04:42.2146557Z with:
+2025-06-07T14:04:42.2147016Z   repository: TSGCFO/RPM-inquires-mailer
+2025-06-07T14:04:42.2147757Z   token: ***
+2025-06-07T14:04:42.2148176Z   ssh-strict: true
+2025-06-07T14:04:42.2148602Z   ssh-user: git
+2025-06-07T14:04:42.2149042Z   persist-credentials: true
+2025-06-07T14:04:42.2149541Z   clean: true
+2025-06-07T14:04:42.2149978Z   sparse-checkout-cone-mode: true
+2025-06-07T14:04:42.2150483Z   fetch-depth: 1
+2025-06-07T14:04:42.2150920Z   fetch-tags: false
+2025-06-07T14:04:42.2151350Z   show-progress: true
+2025-06-07T14:04:42.2151776Z   lfs: false
+2025-06-07T14:04:42.2152176Z   submodules: false
+2025-06-07T14:04:42.2152610Z   set-safe-directory: true
+2025-06-07T14:04:42.2153549Z ##[endgroup]
+2025-06-07T14:04:42.3273654Z Syncing repository: TSGCFO/RPM-inquires-mailer
+2025-06-07T14:04:42.3276192Z ##[group]Getting Git version info
+2025-06-07T14:04:42.3277657Z Working directory is '/home/runner/work/RPM-inquires-mailer/RPM-inquires-mailer'
+2025-06-07T14:04:42.3279634Z [command]/usr/bin/git version
+2025-06-07T14:04:42.3287406Z git version 2.49.0
+2025-06-07T14:04:42.3325766Z ##[endgroup]
+2025-06-07T14:04:42.3345865Z Temporarily overriding HOME='/home/runner/work/_temp/a7a8cd9e-aa56-4f9d-ac7c-46014d6eba64' before making global git config changes
+2025-06-07T14:04:42.3348258Z Adding repository directory to the temporary git global config as a safe directory
+2025-06-07T14:04:42.3352423Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/RPM-inquires-mailer/RPM-inquires-mailer
+2025-06-07T14:04:42.3388907Z Deleting the contents of '/home/runner/work/RPM-inquires-mailer/RPM-inquires-mailer'
+2025-06-07T14:04:42.3393191Z ##[group]Initializing the repository
+2025-06-07T14:04:42.3397968Z [command]/usr/bin/git init /home/runner/work/RPM-inquires-mailer/RPM-inquires-mailer
+2025-06-07T14:04:42.3467130Z hint: Using 'master' as the name for the initial branch. This default branch name
+2025-06-07T14:04:42.3469961Z hint: is subject to change. To configure the initial branch name to use in all
+2025-06-07T14:04:42.3471659Z hint: of your new repositories, which will suppress this warning, call:
+2025-06-07T14:04:42.3473241Z hint:
+2025-06-07T14:04:42.3474116Z hint: 	git config --global init.defaultBranch <name>
+2025-06-07T14:04:42.3475196Z hint:
+2025-06-07T14:04:42.3476230Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2025-06-07T14:04:42.3477868Z hint: 'development'. The just-created branch can be renamed via this command:
+2025-06-07T14:04:42.3479161Z hint:
+2025-06-07T14:04:42.3479895Z hint: 	git branch -m <name>
+2025-06-07T14:04:42.3482235Z Initialized empty Git repository in /home/runner/work/RPM-inquires-mailer/RPM-inquires-mailer/.git/
+2025-06-07T14:04:42.3485458Z [command]/usr/bin/git remote add origin https://github.com/TSGCFO/RPM-inquires-mailer
+2025-06-07T14:04:42.3514667Z ##[endgroup]
+2025-06-07T14:04:42.3516092Z ##[group]Disabling automatic garbage collection
+2025-06-07T14:04:42.3519083Z [command]/usr/bin/git config --local gc.auto 0
+2025-06-07T14:04:42.3546333Z ##[endgroup]
+2025-06-07T14:04:42.3547042Z ##[group]Setting up auth
+2025-06-07T14:04:42.3553388Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2025-06-07T14:04:42.3582217Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2025-06-07T14:04:42.3837511Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2025-06-07T14:04:42.3864904Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2025-06-07T14:04:42.4077041Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2025-06-07T14:04:42.4109897Z ##[endgroup]
+2025-06-07T14:04:42.4111530Z ##[group]Fetching the repository
+2025-06-07T14:04:42.4127230Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +0cc2b786fe7ab6892f397514c69ec33fbbf36e6b:refs/remotes/origin/code
+2025-06-07T14:04:42.7682654Z From https://github.com/TSGCFO/RPM-inquires-mailer
+2025-06-07T14:04:42.7683955Z  * [new ref]         0cc2b786fe7ab6892f397514c69ec33fbbf36e6b -> origin/code
+2025-06-07T14:04:42.7707293Z ##[endgroup]
+2025-06-07T14:04:42.7708023Z ##[group]Determining the checkout info
+2025-06-07T14:04:42.7709453Z ##[endgroup]
+2025-06-07T14:04:42.7714664Z [command]/usr/bin/git sparse-checkout disable
+2025-06-07T14:04:42.7753776Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2025-06-07T14:04:42.7780138Z ##[group]Checking out the ref
+2025-06-07T14:04:42.7784452Z [command]/usr/bin/git checkout --progress --force -B code refs/remotes/origin/code
+2025-06-07T14:04:42.7832985Z Switched to a new branch 'code'
+2025-06-07T14:04:42.7836426Z branch 'code' set up to track 'origin/code'.
+2025-06-07T14:04:42.7842258Z ##[endgroup]
+2025-06-07T14:04:42.7876359Z [command]/usr/bin/git log -1 --format=%H
+2025-06-07T14:04:42.7898515Z 0cc2b786fe7ab6892f397514c69ec33fbbf36e6b
+2025-06-07T14:04:42.8274324Z ##[group]Run actions/setup-python@v4
+2025-06-07T14:04:42.8274911Z with:
+2025-06-07T14:04:42.8275499Z   python-version: 3.11
+2025-06-07T14:04:42.8275967Z   check-latest: false
+2025-06-07T14:04:42.8276547Z   token: ***
+2025-06-07T14:04:42.8276971Z   update-environment: true
+2025-06-07T14:04:42.8277468Z   allow-prereleases: false
+2025-06-07T14:04:42.8277937Z ##[endgroup]
+2025-06-07T14:04:42.9983365Z ##[group]Installed versions
+2025-06-07T14:04:43.0260191Z Successfully set up CPython (3.11.12)
+2025-06-07T14:04:43.0261807Z ##[endgroup]
+2025-06-07T14:04:43.1108598Z ##[group]Run actions/cache@v3
+2025-06-07T14:04:43.1109289Z with:
+2025-06-07T14:04:43.1109761Z   path: ~/.cache/pip
+2025-06-07T14:04:43.1110711Z   key: Linux-pip-f1d37833413a661b7fcfbefb67cebd3c9a93650fc9968bc80a32595948e0f814
+2025-06-07T14:04:43.1111836Z   restore-keys: Linux-pip-
+
+2025-06-07T14:04:43.1112455Z   enableCrossOsArchive: false
+2025-06-07T14:04:43.1113589Z   fail-on-cache-miss: false
+2025-06-07T14:04:43.1114203Z   lookup-only: false
+2025-06-07T14:04:43.1114716Z env:
+2025-06-07T14:04:43.1115326Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.12/x64
+2025-06-07T14:04:43.1116503Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.12/x64/lib/pkgconfig
+2025-06-07T14:04:43.1117620Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.12/x64
+2025-06-07T14:04:43.1118608Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.12/x64
+2025-06-07T14:04:43.1119632Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.12/x64
+2025-06-07T14:04:43.1120668Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.12/x64/lib
+2025-06-07T14:04:43.1121496Z ##[endgroup]
+2025-06-07T14:04:43.3736016Z Cache not found for input keys: Linux-pip-f1d37833413a661b7fcfbefb67cebd3c9a93650fc9968bc80a32595948e0f814, Linux-pip-
+2025-06-07T14:04:43.3849354Z ##[group]Run python -m pip install --upgrade pip
+2025-06-07T14:04:43.3850956Z [36;1mpython -m pip install --upgrade pip[0m
+2025-06-07T14:04:43.3852627Z [36;1mpip install -r requirements.txt -r requirements-dev.txt[0m
+2025-06-07T14:04:43.4035252Z shell: /usr/bin/bash -e {0}
+2025-06-07T14:04:43.4036329Z env:
+2025-06-07T14:04:43.4037455Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.12/x64
+2025-06-07T14:04:43.4039337Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.12/x64/lib/pkgconfig
+2025-06-07T14:04:43.4041207Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.12/x64
+2025-06-07T14:04:43.4043052Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.12/x64
+2025-06-07T14:04:43.4044726Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.12/x64
+2025-06-07T14:04:43.4046430Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.12/x64/lib
+2025-06-07T14:04:43.4047868Z ##[endgroup]
+2025-06-07T14:04:45.9782271Z Requirement already satisfied: pip in /opt/hostedtoolcache/Python/3.11.12/x64/lib/python3.11/site-packages (25.1.1)
+2025-06-07T14:04:47.1321597Z Collecting psycopg>=3.1 (from psycopg[binary]>=3.1->-r requirements.txt (line 1))
+2025-06-07T14:04:47.2152164Z   Downloading psycopg-3.2.9-py3-none-any.whl.metadata (4.5 kB)
+2025-06-07T14:04:47.2679206Z Collecting requests>=2.31 (from -r requirements.txt (line 2))
+2025-06-07T14:04:47.2846770Z   Downloading requests-2.32.3-py3-none-any.whl.metadata (4.6 kB)
+2025-06-07T14:04:47.3385805Z Collecting pytest>=7.0 (from -r requirements-dev.txt (line 1))
+2025-06-07T14:04:47.3542931Z   Downloading pytest-8.4.0-py3-none-any.whl.metadata (7.7 kB)
+2025-06-07T14:04:47.4012947Z Collecting typing-extensions>=4.6 (from psycopg>=3.1->psycopg[binary]>=3.1->-r requirements.txt (line 1))
+2025-06-07T14:04:47.4172163Z   Downloading typing_extensions-4.14.0-py3-none-any.whl.metadata (3.0 kB)
+2025-06-07T14:04:47.5141330Z Collecting charset-normalizer<4,>=2 (from requests>=2.31->-r requirements.txt (line 2))
+2025-06-07T14:04:47.5302960Z   Downloading charset_normalizer-3.4.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (35 kB)
+2025-06-07T14:04:47.5672514Z Collecting idna<4,>=2.5 (from requests>=2.31->-r requirements.txt (line 2))
+2025-06-07T14:04:47.5824330Z   Downloading idna-3.10-py3-none-any.whl.metadata (10 kB)
+2025-06-07T14:04:47.6215038Z Collecting urllib3<3,>=1.21.1 (from requests>=2.31->-r requirements.txt (line 2))
+2025-06-07T14:04:47.6375680Z   Downloading urllib3-2.4.0-py3-none-any.whl.metadata (6.5 kB)
+2025-06-07T14:04:47.6699843Z Collecting certifi>=2017.4.17 (from requests>=2.31->-r requirements.txt (line 2))
+2025-06-07T14:04:47.6853526Z   Downloading certifi-2025.4.26-py3-none-any.whl.metadata (2.5 kB)
+2025-06-07T14:04:47.7094240Z Collecting iniconfig>=1 (from pytest>=7.0->-r requirements-dev.txt (line 1))
+2025-06-07T14:04:47.7249497Z   Downloading iniconfig-2.1.0-py3-none-any.whl.metadata (2.7 kB)
+2025-06-07T14:04:47.7547614Z Collecting packaging>=20 (from pytest>=7.0->-r requirements-dev.txt (line 1))
+2025-06-07T14:04:47.7706567Z   Downloading packaging-25.0-py3-none-any.whl.metadata (3.3 kB)
+2025-06-07T14:04:47.7958337Z Collecting pluggy<2,>=1.5 (from pytest>=7.0->-r requirements-dev.txt (line 1))
+2025-06-07T14:04:47.8112273Z   Downloading pluggy-1.6.0-py3-none-any.whl.metadata (4.8 kB)
+2025-06-07T14:04:47.8439302Z Collecting pygments>=2.7.2 (from pytest>=7.0->-r requirements-dev.txt (line 1))
+2025-06-07T14:04:47.8595097Z   Downloading pygments-2.19.1-py3-none-any.whl.metadata (2.5 kB)
+2025-06-07T14:04:48.0191868Z Collecting psycopg-binary==3.2.9 (from psycopg[binary]>=3.1->-r requirements.txt (line 1))
+2025-06-07T14:04:48.0357250Z   Downloading psycopg_binary-3.2.9-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (2.9 kB)
+2025-06-07T14:04:48.0573597Z Downloading psycopg-3.2.9-py3-none-any.whl (202 kB)
+2025-06-07T14:04:48.0962279Z Downloading requests-2.32.3-py3-none-any.whl (64 kB)
+2025-06-07T14:04:48.1160896Z Downloading charset_normalizer-3.4.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (147 kB)
+2025-06-07T14:04:48.1368002Z Downloading idna-3.10-py3-none-any.whl (70 kB)
+2025-06-07T14:04:48.1543115Z Downloading urllib3-2.4.0-py3-none-any.whl (128 kB)
+2025-06-07T14:04:48.1741217Z Downloading pytest-8.4.0-py3-none-any.whl (363 kB)
+2025-06-07T14:04:48.2057307Z Downloading pluggy-1.6.0-py3-none-any.whl (20 kB)
+2025-06-07T14:04:48.2235515Z Downloading certifi-2025.4.26-py3-none-any.whl (159 kB)
+2025-06-07T14:04:48.2420694Z Downloading iniconfig-2.1.0-py3-none-any.whl (6.0 kB)
+2025-06-07T14:04:48.2595974Z Downloading packaging-25.0-py3-none-any.whl (66 kB)
+2025-06-07T14:04:48.2783492Z Downloading psycopg_binary-3.2.9-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (4.5 MB)
+2025-06-07T14:04:48.3234744Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.5/4.5 MB 101.8 MB/s eta 0:00:00
+2025-06-07T14:04:48.3400356Z Downloading pygments-2.19.1-py3-none-any.whl (1.2 MB)
+2025-06-07T14:04:48.3490772Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.2/1.2 MB 154.0 MB/s eta 0:00:00
+2025-06-07T14:04:48.3647716Z Downloading typing_extensions-4.14.0-py3-none-any.whl (43 kB)
+2025-06-07T14:04:48.4168939Z Installing collected packages: urllib3, typing-extensions, pygments, psycopg-binary, pluggy, packaging, iniconfig, idna, charset-normalizer, certifi, requests, pytest, psycopg
+2025-06-07T14:04:49.7497459Z 
+2025-06-07T14:04:49.7511723Z Successfully installed certifi-2025.4.26 charset-normalizer-3.4.2 idna-3.10 iniconfig-2.1.0 packaging-25.0 pluggy-1.6.0 psycopg-3.2.9 psycopg-binary-3.2.9 pygments-2.19.1 pytest-8.4.0 requests-2.32.3 typing-extensions-4.14.0 urllib3-2.4.0
+2025-06-07T14:04:49.8313504Z ##[group]Run # Stop on syntax errors or undefined names
+2025-06-07T14:04:49.8313939Z [36;1m# Stop on syntax errors or undefined names[0m
+2025-06-07T14:04:49.8314394Z [36;1mpython -m flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics || true[0m
+2025-06-07T14:04:49.8367376Z shell: /usr/bin/bash -e {0}
+2025-06-07T14:04:49.8367610Z env:
+2025-06-07T14:04:49.8367861Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.12/x64
+2025-06-07T14:04:49.8368264Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.12/x64/lib/pkgconfig
+2025-06-07T14:04:49.8368660Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.12/x64
+2025-06-07T14:04:49.8369015Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.12/x64
+2025-06-07T14:04:49.8369356Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.12/x64
+2025-06-07T14:04:49.8369909Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.12/x64/lib
+2025-06-07T14:04:49.8370209Z ##[endgroup]
+2025-06-07T14:04:49.8580065Z /opt/hostedtoolcache/Python/3.11.12/x64/bin/python: No module named flake8
+2025-06-07T14:04:49.8635586Z ##[group]Run python -m py_compile listener.py
+2025-06-07T14:04:49.8635932Z [36;1mpython -m py_compile listener.py[0m
+2025-06-07T14:04:49.8687260Z shell: /usr/bin/bash -e {0}
+2025-06-07T14:04:49.8687480Z env:
+2025-06-07T14:04:49.8687725Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.12/x64
+2025-06-07T14:04:49.8688130Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.12/x64/lib/pkgconfig
+2025-06-07T14:04:49.8688521Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.12/x64
+2025-06-07T14:04:49.8688864Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.12/x64
+2025-06-07T14:04:49.8689210Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.12/x64
+2025-06-07T14:04:49.8689556Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.12/x64/lib
+2025-06-07T14:04:49.8689856Z ##[endgroup]
+2025-06-07T14:04:49.9102233Z ##[group]Run pytest tests/test_listener.py -v --tb=short
+2025-06-07T14:04:49.9102622Z [36;1mpytest tests/test_listener.py -v --tb=short[0m
+2025-06-07T14:04:49.9154664Z shell: /usr/bin/bash -e {0}
+2025-06-07T14:04:49.9154888Z env:
+2025-06-07T14:04:49.9155133Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.12/x64
+2025-06-07T14:04:49.9155535Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.12/x64/lib/pkgconfig
+2025-06-07T14:04:49.9155943Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.12/x64
+2025-06-07T14:04:49.9156302Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.12/x64
+2025-06-07T14:04:49.9156652Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.12/x64
+2025-06-07T14:04:49.9157002Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.12/x64/lib
+2025-06-07T14:04:49.9157299Z ##[endgroup]
+2025-06-07T14:04:50.3396624Z ============================= test session starts ==============================
+2025-06-07T14:04:50.3397791Z platform linux -- Python 3.11.12, pytest-8.4.0, pluggy-1.6.0 -- /opt/hostedtoolcache/Python/3.11.12/x64/bin/python
+2025-06-07T14:04:50.3398593Z cachedir: .pytest_cache
+2025-06-07T14:04:50.3399121Z rootdir: /home/runner/work/RPM-inquires-mailer/RPM-inquires-mailer
+2025-06-07T14:04:50.4785778Z collecting ... collected 0 items / 1 error
+2025-06-07T14:04:50.4786269Z 
+2025-06-07T14:04:50.4786488Z ==================================== ERRORS ====================================
+2025-06-07T14:04:50.4787312Z ___________________ ERROR collecting tests/test_listener.py ____________________
+2025-06-07T14:04:50.4788632Z ImportError while importing test module '/home/runner/work/RPM-inquires-mailer/RPM-inquires-mailer/tests/test_listener.py'.
+2025-06-07T14:04:50.4789842Z Hint: make sure your test modules/packages have valid Python names.
+2025-06-07T14:04:50.4790258Z Traceback:
+2025-06-07T14:04:50.4790762Z /opt/hostedtoolcache/Python/3.11.12/x64/lib/python3.11/importlib/__init__.py:126: in import_module
+2025-06-07T14:04:50.4791543Z     return _bootstrap._gcd_import(name[level:], package, level)
+2025-06-07T14:04:50.4791969Z            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2025-06-07T14:04:50.4792315Z tests/test_listener.py:6: in <module>
+2025-06-07T14:04:50.4792625Z     import listener
+2025-06-07T14:04:50.4793289Z E   ModuleNotFoundError: No module named 'listener'
+2025-06-07T14:04:50.4793721Z =========================== short test summary info ============================
+2025-06-07T14:04:50.4794110Z ERROR tests/test_listener.py
+2025-06-07T14:04:50.4794488Z !!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+2025-06-07T14:04:50.4794923Z =============================== 1 error in 0.12s ===============================
+2025-06-07T14:04:50.4996004Z ##[error]Process completed with exit code 2.
+2025-06-07T14:04:50.5124634Z Post job cleanup.
+2025-06-07T14:04:50.6106529Z [command]/usr/bin/git version
+2025-06-07T14:04:50.6143759Z git version 2.49.0
+2025-06-07T14:04:50.6187893Z Temporarily overriding HOME='/home/runner/work/_temp/ed7c33e8-ff30-43c9-ae52-fbe03d07142d' before making global git config changes
+2025-06-07T14:04:50.6189052Z Adding repository directory to the temporary git global config as a safe directory
+2025-06-07T14:04:50.6201417Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/RPM-inquires-mailer/RPM-inquires-mailer
+2025-06-07T14:04:50.6238939Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2025-06-07T14:04:50.6272836Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2025-06-07T14:04:50.6506025Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2025-06-07T14:04:50.6529326Z http.https://github.com/.extraheader
+2025-06-07T14:04:50.6543103Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2025-06-07T14:04:50.6577191Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2025-06-07T14:04:50.6912203Z Cleaning up orphan processes

@@ -1,0 +1,33 @@
+﻿2025-06-07T14:04:49.1859308Z ##[group]Run pytest tests/test_listener.py -v --tb=short
+2025-06-07T14:04:49.1859958Z [36;1mpytest tests/test_listener.py -v --tb=short[0m
+2025-06-07T14:04:49.1912084Z shell: /usr/bin/bash -e {0}
+2025-06-07T14:04:49.1912320Z env:
+2025-06-07T14:04:49.1912574Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.10/x64
+2025-06-07T14:04:49.1912988Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.10/x64/lib/pkgconfig
+2025-06-07T14:04:49.1913378Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.10/x64
+2025-06-07T14:04:49.1913723Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.10/x64
+2025-06-07T14:04:49.1914059Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.10/x64
+2025-06-07T14:04:49.1914420Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.10/x64/lib
+2025-06-07T14:04:49.1914719Z ##[endgroup]
+2025-06-07T14:04:49.5896379Z ============================= test session starts ==============================
+2025-06-07T14:04:49.5897676Z platform linux -- Python 3.12.10, pytest-8.4.0, pluggy-1.6.0 -- /opt/hostedtoolcache/Python/3.12.10/x64/bin/python
+2025-06-07T14:04:49.5898603Z cachedir: .pytest_cache
+2025-06-07T14:04:49.5899156Z rootdir: /home/runner/work/RPM-inquires-mailer/RPM-inquires-mailer
+2025-06-07T14:04:49.7145694Z collecting ... collected 0 items / 1 error
+2025-06-07T14:04:49.7146033Z 
+2025-06-07T14:04:49.7146173Z ==================================== ERRORS ====================================
+2025-06-07T14:04:49.7146584Z ___________________ ERROR collecting tests/test_listener.py ____________________
+2025-06-07T14:04:49.7147502Z ImportError while importing test module '/home/runner/work/RPM-inquires-mailer/RPM-inquires-mailer/tests/test_listener.py'.
+2025-06-07T14:04:49.7148164Z Hint: make sure your test modules/packages have valid Python names.
+2025-06-07T14:04:49.7148531Z Traceback:
+2025-06-07T14:04:49.7148928Z /opt/hostedtoolcache/Python/3.12.10/x64/lib/python3.12/importlib/__init__.py:90: in import_module
+2025-06-07T14:04:49.7149479Z     return _bootstrap._gcd_import(name[level:], package, level)
+2025-06-07T14:04:49.7149822Z            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2025-06-07T14:04:49.7150102Z tests/test_listener.py:6: in <module>
+2025-06-07T14:04:49.7150359Z     import listener
+2025-06-07T14:04:49.7150604Z E   ModuleNotFoundError: No module named 'listener'
+2025-06-07T14:04:49.7150950Z =========================== short test summary info ============================
+2025-06-07T14:04:49.7151273Z ERROR tests/test_listener.py
+2025-06-07T14:04:49.7151577Z !!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+2025-06-07T14:04:49.7151931Z =============================== 1 error in 0.11s ===============================
+2025-06-07T14:04:49.7357776Z ##[error]Process completed with exit code 2.
