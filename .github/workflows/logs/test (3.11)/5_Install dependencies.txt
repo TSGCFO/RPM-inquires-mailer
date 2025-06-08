@@ -1,0 +1,57 @@
+﻿2025-06-07T14:04:43.3849330Z ##[group]Run python -m pip install --upgrade pip
+2025-06-07T14:04:43.3850952Z [36;1mpython -m pip install --upgrade pip[0m
+2025-06-07T14:04:43.3852616Z [36;1mpip install -r requirements.txt -r requirements-dev.txt[0m
+2025-06-07T14:04:43.4035230Z shell: /usr/bin/bash -e {0}
+2025-06-07T14:04:43.4036325Z env:
+2025-06-07T14:04:43.4037450Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.12/x64
+2025-06-07T14:04:43.4039333Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.12/x64/lib/pkgconfig
+2025-06-07T14:04:43.4041204Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.12/x64
+2025-06-07T14:04:43.4043048Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.12/x64
+2025-06-07T14:04:43.4044722Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.12/x64
+2025-06-07T14:04:43.4046427Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.12/x64/lib
+2025-06-07T14:04:43.4047864Z ##[endgroup]
+2025-06-07T14:04:45.9782069Z Requirement already satisfied: pip in /opt/hostedtoolcache/Python/3.11.12/x64/lib/python3.11/site-packages (25.1.1)
+2025-06-07T14:04:47.1321508Z Collecting psycopg>=3.1 (from psycopg[binary]>=3.1->-r requirements.txt (line 1))
+2025-06-07T14:04:47.2152094Z   Downloading psycopg-3.2.9-py3-none-any.whl.metadata (4.5 kB)
+2025-06-07T14:04:47.2679158Z Collecting requests>=2.31 (from -r requirements.txt (line 2))
+2025-06-07T14:04:47.2846699Z   Downloading requests-2.32.3-py3-none-any.whl.metadata (4.6 kB)
+2025-06-07T14:04:47.3385724Z Collecting pytest>=7.0 (from -r requirements-dev.txt (line 1))
+2025-06-07T14:04:47.3542615Z   Downloading pytest-8.4.0-py3-none-any.whl.metadata (7.7 kB)
+2025-06-07T14:04:47.4012897Z Collecting typing-extensions>=4.6 (from psycopg>=3.1->psycopg[binary]>=3.1->-r requirements.txt (line 1))
+2025-06-07T14:04:47.4172019Z   Downloading typing_extensions-4.14.0-py3-none-any.whl.metadata (3.0 kB)
+2025-06-07T14:04:47.5141289Z Collecting charset-normalizer<4,>=2 (from requests>=2.31->-r requirements.txt (line 2))
+2025-06-07T14:04:47.5302900Z   Downloading charset_normalizer-3.4.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (35 kB)
+2025-06-07T14:04:47.5672471Z Collecting idna<4,>=2.5 (from requests>=2.31->-r requirements.txt (line 2))
+2025-06-07T14:04:47.5824252Z   Downloading idna-3.10-py3-none-any.whl.metadata (10 kB)
+2025-06-07T14:04:47.6215006Z Collecting urllib3<3,>=1.21.1 (from requests>=2.31->-r requirements.txt (line 2))
+2025-06-07T14:04:47.6375643Z   Downloading urllib3-2.4.0-py3-none-any.whl.metadata (6.5 kB)
+2025-06-07T14:04:47.6699807Z Collecting certifi>=2017.4.17 (from requests>=2.31->-r requirements.txt (line 2))
+2025-06-07T14:04:47.6853501Z   Downloading certifi-2025.4.26-py3-none-any.whl.metadata (2.5 kB)
+2025-06-07T14:04:47.7094205Z Collecting iniconfig>=1 (from pytest>=7.0->-r requirements-dev.txt (line 1))
+2025-06-07T14:04:47.7249464Z   Downloading iniconfig-2.1.0-py3-none-any.whl.metadata (2.7 kB)
+2025-06-07T14:04:47.7547555Z Collecting packaging>=20 (from pytest>=7.0->-r requirements-dev.txt (line 1))
+2025-06-07T14:04:47.7706486Z   Downloading packaging-25.0-py3-none-any.whl.metadata (3.3 kB)
+2025-06-07T14:04:47.7958315Z Collecting pluggy<2,>=1.5 (from pytest>=7.0->-r requirements-dev.txt (line 1))
+2025-06-07T14:04:47.8112254Z   Downloading pluggy-1.6.0-py3-none-any.whl.metadata (4.8 kB)
+2025-06-07T14:04:47.8439263Z Collecting pygments>=2.7.2 (from pytest>=7.0->-r requirements-dev.txt (line 1))
+2025-06-07T14:04:47.8595072Z   Downloading pygments-2.19.1-py3-none-any.whl.metadata (2.5 kB)
+2025-06-07T14:04:48.0191843Z Collecting psycopg-binary==3.2.9 (from psycopg[binary]>=3.1->-r requirements.txt (line 1))
+2025-06-07T14:04:48.0357237Z   Downloading psycopg_binary-3.2.9-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (2.9 kB)
+2025-06-07T14:04:48.0573571Z Downloading psycopg-3.2.9-py3-none-any.whl (202 kB)
+2025-06-07T14:04:48.0962255Z Downloading requests-2.32.3-py3-none-any.whl (64 kB)
+2025-06-07T14:04:48.1160191Z Downloading charset_normalizer-3.4.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (147 kB)
+2025-06-07T14:04:48.1367965Z Downloading idna-3.10-py3-none-any.whl (70 kB)
+2025-06-07T14:04:48.1543088Z Downloading urllib3-2.4.0-py3-none-any.whl (128 kB)
+2025-06-07T14:04:48.1741200Z Downloading pytest-8.4.0-py3-none-any.whl (363 kB)
+2025-06-07T14:04:48.2057283Z Downloading pluggy-1.6.0-py3-none-any.whl (20 kB)
+2025-06-07T14:04:48.2235500Z Downloading certifi-2025.4.26-py3-none-any.whl (159 kB)
+2025-06-07T14:04:48.2420678Z Downloading iniconfig-2.1.0-py3-none-any.whl (6.0 kB)
+2025-06-07T14:04:48.2595955Z Downloading packaging-25.0-py3-none-any.whl (66 kB)
+2025-06-07T14:04:48.2783464Z Downloading psycopg_binary-3.2.9-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (4.5 MB)
+2025-06-07T14:04:48.3234697Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.5/4.5 MB 101.8 MB/s eta 0:00:00
+2025-06-07T14:04:48.3400316Z Downloading pygments-2.19.1-py3-none-any.whl (1.2 MB)
+2025-06-07T14:04:48.3490730Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.2/1.2 MB 154.0 MB/s eta 0:00:00
+2025-06-07T14:04:48.3647647Z Downloading typing_extensions-4.14.0-py3-none-any.whl (43 kB)
+2025-06-07T14:04:48.4168910Z Installing collected packages: urllib3, typing-extensions, pygments, psycopg-binary, pluggy, packaging, iniconfig, idna, charset-normalizer, certifi, requests, pytest, psycopg
+2025-06-07T14:04:49.7497411Z 
+2025-06-07T14:04:49.7511709Z Successfully installed certifi-2025.4.26 charset-normalizer-3.4.2 idna-3.10 iniconfig-2.1.0 packaging-25.0 pluggy-1.6.0 psycopg-3.2.9 psycopg-binary-3.2.9 pygments-2.19.1 pytest-8.4.0 requests-2.32.3 typing-extensions-4.14.0 urllib3-2.4.0

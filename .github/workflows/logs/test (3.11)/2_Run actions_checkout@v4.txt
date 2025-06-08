@@ -1,0 +1,67 @@
+﻿2025-06-07T14:04:42.2145673Z ##[group]Run actions/checkout@v4
+2025-06-07T14:04:42.2146550Z with:
+2025-06-07T14:04:42.2147012Z   repository: TSGCFO/RPM-inquires-mailer
+2025-06-07T14:04:42.2147754Z   token: ***
+2025-06-07T14:04:42.2148168Z   ssh-strict: true
+2025-06-07T14:04:42.2148599Z   ssh-user: git
+2025-06-07T14:04:42.2149039Z   persist-credentials: true
+2025-06-07T14:04:42.2149537Z   clean: true
+2025-06-07T14:04:42.2149975Z   sparse-checkout-cone-mode: true
+2025-06-07T14:04:42.2150481Z   fetch-depth: 1
+2025-06-07T14:04:42.2150918Z   fetch-tags: false
+2025-06-07T14:04:42.2151347Z   show-progress: true
+2025-06-07T14:04:42.2151774Z   lfs: false
+2025-06-07T14:04:42.2152173Z   submodules: false
+2025-06-07T14:04:42.2152607Z   set-safe-directory: true
+2025-06-07T14:04:42.2153538Z ##[endgroup]
+2025-06-07T14:04:42.3273597Z Syncing repository: TSGCFO/RPM-inquires-mailer
+2025-06-07T14:04:42.3276169Z ##[group]Getting Git version info
+2025-06-07T14:04:42.3277563Z Working directory is '/home/runner/work/RPM-inquires-mailer/RPM-inquires-mailer'
+2025-06-07T14:04:42.3279613Z [command]/usr/bin/git version
+2025-06-07T14:04:42.3287379Z git version 2.49.0
+2025-06-07T14:04:42.3325743Z ##[endgroup]
+2025-06-07T14:04:42.3345836Z Temporarily overriding HOME='/home/runner/work/_temp/a7a8cd9e-aa56-4f9d-ac7c-46014d6eba64' before making global git config changes
+2025-06-07T14:04:42.3348248Z Adding repository directory to the temporary git global config as a safe directory
+2025-06-07T14:04:42.3352394Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/RPM-inquires-mailer/RPM-inquires-mailer
+2025-06-07T14:04:42.3388876Z Deleting the contents of '/home/runner/work/RPM-inquires-mailer/RPM-inquires-mailer'
+2025-06-07T14:04:42.3393167Z ##[group]Initializing the repository
+2025-06-07T14:04:42.3397935Z [command]/usr/bin/git init /home/runner/work/RPM-inquires-mailer/RPM-inquires-mailer
+2025-06-07T14:04:42.3467101Z hint: Using 'master' as the name for the initial branch. This default branch name
+2025-06-07T14:04:42.3469902Z hint: is subject to change. To configure the initial branch name to use in all
+2025-06-07T14:04:42.3471636Z hint: of your new repositories, which will suppress this warning, call:
+2025-06-07T14:04:42.3473219Z hint:
+2025-06-07T14:04:42.3474099Z hint: 	git config --global init.defaultBranch <name>
+2025-06-07T14:04:42.3475178Z hint:
+2025-06-07T14:04:42.3476211Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2025-06-07T14:04:42.3477850Z hint: 'development'. The just-created branch can be renamed via this command:
+2025-06-07T14:04:42.3479140Z hint:
+2025-06-07T14:04:42.3479883Z hint: 	git branch -m <name>
+2025-06-07T14:04:42.3482211Z Initialized empty Git repository in /home/runner/work/RPM-inquires-mailer/RPM-inquires-mailer/.git/
+2025-06-07T14:04:42.3485432Z [command]/usr/bin/git remote add origin https://github.com/TSGCFO/RPM-inquires-mailer
+2025-06-07T14:04:42.3514644Z ##[endgroup]
+2025-06-07T14:04:42.3516078Z ##[group]Disabling automatic garbage collection
+2025-06-07T14:04:42.3519041Z [command]/usr/bin/git config --local gc.auto 0
+2025-06-07T14:04:42.3546314Z ##[endgroup]
+2025-06-07T14:04:42.3547038Z ##[group]Setting up auth
+2025-06-07T14:04:42.3553371Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2025-06-07T14:04:42.3582194Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2025-06-07T14:04:42.3837482Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2025-06-07T14:04:42.3864880Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2025-06-07T14:04:42.4077012Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2025-06-07T14:04:42.4109865Z ##[endgroup]
+2025-06-07T14:04:42.4111164Z ##[group]Fetching the repository
+2025-06-07T14:04:42.4127202Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +0cc2b786fe7ab6892f397514c69ec33fbbf36e6b:refs/remotes/origin/code
+2025-06-07T14:04:42.7682582Z From https://github.com/TSGCFO/RPM-inquires-mailer
+2025-06-07T14:04:42.7683948Z  * [new ref]         0cc2b786fe7ab6892f397514c69ec33fbbf36e6b -> origin/code
+2025-06-07T14:04:42.7707272Z ##[endgroup]
+2025-06-07T14:04:42.7708020Z ##[group]Determining the checkout info
+2025-06-07T14:04:42.7709445Z ##[endgroup]
+2025-06-07T14:04:42.7714639Z [command]/usr/bin/git sparse-checkout disable
+2025-06-07T14:04:42.7753746Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2025-06-07T14:04:42.7780115Z ##[group]Checking out the ref
+2025-06-07T14:04:42.7784426Z [command]/usr/bin/git checkout --progress --force -B code refs/remotes/origin/code
+2025-06-07T14:04:42.7832959Z Switched to a new branch 'code'
+2025-06-07T14:04:42.7836368Z branch 'code' set up to track 'origin/code'.
+2025-06-07T14:04:42.7842235Z ##[endgroup]
+2025-06-07T14:04:42.7876333Z [command]/usr/bin/git log -1 --format=%H
+2025-06-07T14:04:42.7898491Z 0cc2b786fe7ab6892f397514c69ec33fbbf36e6b
