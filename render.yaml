@@ -83,7 +83,4 @@ services:
   startCommand: python listener.py
   autoDeployTrigger: commit
   
-  # Health Check Configuration
-  healthCheckPath: /
-  
 version: "1"
