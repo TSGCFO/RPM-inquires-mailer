@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:docs.anthropic.com)",
+      "Bash(python:*)",
+      "Bash(source:*)",
+      "Bash(pip install:*)"
+    ],
+    "deny": []
+  }
+}

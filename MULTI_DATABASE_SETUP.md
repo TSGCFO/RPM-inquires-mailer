@@ -8,27 +8,37 @@ The RPM Inquiries Mailer now supports monitoring multiple PostgreSQL databases s
 
 - Monitor Database 1 → Send emails from User 1 to Recipient 1
 - Monitor Database 2 → Send emails from User 2 to Recipient 2
-- Run both instances concurrently in a single deployment
+- Monitor additional databases in the future with similar configurations
+- Run all instances concurrently in a single deployment
 
 ## Architecture
 
 The system uses a threaded architecture where each database/email configuration runs in its own thread:
 
-```
+```txt
 Main Process
 ├── Thread 1: Database 1 Listener
 │   ├── PostgreSQL Connection (DB1)
 │   ├── Microsoft Graph Token (Tenant 1)
 │   └── Email Sender (User 1 → Recipient 1)
 └── Thread 2: Database 2 Listener
-    ├── PostgreSQL Connection (DB2)
-    ├── Microsoft Graph Token (Tenant 2)
-    └── Email Sender (User 2 → Recipient 2)
+│   ├── PostgreSQL Connection (DB2)
+│   ├── Microsoft Graph Token (Tenant 2)
+│   └── Email Sender (User 2 → Recipient 2)
+│── Thread 3: Database 3 Listener
+│   ├── PostgreSQL Connection (DB3)
+│   ├── Microsoft Graph Token (Tenant 3)
+│   └── Email Sender (User 3 → Recipient 3)
+|__ Thread N: Database N Listener
+    ├── PostgreSQL Connection (DBN)
+    ├── Microsoft Graph Token (Tenant N)
+    └── Email Sender (User N → Recipient N)
 ```
 
 ## Environment Variables
 
 ### Required for Instance 1 (Backward Compatible)
+
 ```bash
 # Database Connection
 PGHOST=your-db-host
@@ -47,6 +57,7 @@ TO_EMAIL=recipient@yourdomain.com
 ```
 
 ### Optional for Instance 2
+
 ```bash
 # Database Connection
 PGHOST_2=your-second-db-host
@@ -67,27 +78,34 @@ TO_EMAIL_2=recipient2@yourdomain.com
 ## Deployment Options
 
 ### Single Database (Current Setup)
+
 Configure only the Instance 1 environment variables. The system will run with one database listener.
 
 ### Dual Database Setup
+
 Configure both Instance 1 and Instance 2 environment variables. The system will automatically detect and start both listeners.
 
 ## Render.com Deployment
 
 ### Environment Variables in Render Dashboard
+
 1. Navigate to your Render service dashboard
 2. Go to Environment tab
 3. Add all required environment variables for your configuration:
 
 **For Single Database:**
+
 - Add all Instance 1 variables listed above
 
 **For Dual Database:**
+
 - Add all Instance 1 variables
 - Add all Instance 2 variables (with `_2` suffix)
 
 ### Service Configuration
+
 The service will automatically:
+
 - Detect available configurations
 - Start appropriate number of listener threads
 - Log startup information for each instance
@@ -96,11 +114,13 @@ The service will automatically:
 ## Database Requirements
 
 Each database must have:
+
 1. A table that triggers notifications (usually an `inquiries` table)
 2. A PostgreSQL trigger that sends NOTIFY signals
 3. Proper network access for the worker service
 
 ### Example Trigger Setup
+
 ```sql
 -- Create notification function
 CREATE OR REPLACE FUNCTION notify_new_inquiry()
@@ -135,7 +155,7 @@ Each instance requires its own Microsoft Graph application registration:
 
 The system provides detailed logging with instance identification:
 
-```
+```console
 ✅ Loaded configuration for Instance-1
 ✅ Loaded configuration for Instance-2
 🚀 Starting 2 database listener(s)...
@@ -152,21 +172,25 @@ The system provides detailed logging with instance identification:
 ## Troubleshooting
 
 ### Instance 2 Not Starting
+
 - Check all `*_2` environment variables are set
 - Verify database connectivity for the second instance
 - Review logs for specific error messages
 
 ### Email Sending Failures
+
 - Verify Microsoft Graph permissions
 - Check client credentials are correct
 - Ensure `FROM_EMAIL` user exists in the tenant
 
 ### Database Connection Issues
+
 - Test database connectivity separately
 - Verify firewall rules allow connections
 - Check PostgreSQL user permissions
 
 ### Token Caching
+
 - Each tenant maintains its own token cache
 - Tokens are automatically refreshed
 - No manual token management required

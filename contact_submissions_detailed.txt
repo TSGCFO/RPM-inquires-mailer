@@ -1,0 +1,15 @@
+                                                                    Table "public.contact_submissions"
+    Column    |            Type             | Collation | Nullable |                     Default                     | Storage  | Compression | Stats target | Description 
+--------------+-----------------------------+-----------+----------+-------------------------------------------------+----------+-------------+--------------+-------------
+ id           | integer                     |           | not null | nextval('contact_submissions_id_seq'::regclass) | plain    |             |              | 
+ first_name   | text                        |           | not null |                                                 | extended |             |              | 
+ last_name    | text                        |           | not null |                                                 | extended |             |              | 
+ email        | text                        |           | not null |                                                 | extended |             |              | 
+ phone        | text                        |           |          |                                                 | extended |             |              | 
+ inquiry_type | text                        |           | not null |                                                 | extended |             |              | 
+ message      | text                        |           | not null |                                                 | extended |             |              | 
+ created_at   | timestamp without time zone |           | not null | now()                                           | plain    |             |              | 
+Indexes:
+    "contact_submissions_pkey" PRIMARY KEY, btree (id)
+Access method: heap
+
