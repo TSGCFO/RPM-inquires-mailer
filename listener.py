@@ -11,6 +11,9 @@ Environment variables required (Render → Environment):
   Instance 2: PGHOST_2, PGDATABASE_2, PGUSER_2, PGPASSWORD_2
               TENANT_ID_2, CLIENT_ID_2, CLIENT_SECRET_2
               FROM_EMAIL_2, TO_EMAIL_2
+  Instance 3: PGHOST_3, PGDATABASE_3, PGUSER_3, PGPASSWORD_3
+              TENANT_ID_3, CLIENT_ID_3, CLIENT_SECRET_3
+              FROM_EMAIL_3, TO_EMAIL_3
 """
 
 import os
@@ -49,6 +52,15 @@ INSTANCE_2_VARS = [
 
 INSTANCE_2_DB_VARS = [
     "PGHOST_2", "PGDATABASE_2", "PGUSER_2", "PGPASSWORD_2"
+]
+
+INSTANCE_3_VARS = [
+    "TENANT_ID_3", "CLIENT_ID_3", "CLIENT_SECRET_3",
+    "FROM_EMAIL_3", "TO_EMAIL_3",
+]
+
+INSTANCE_3_DB_VARS = [
+    "PGHOST_3", "PGDATABASE_3", "PGUSER_3", "PGPASSWORD_3"
 ]
 
 @dataclass
@@ -130,12 +142,39 @@ def load_instance_configs() -> list[InstanceConfig]:
             listen_channel="quote_request_channel"  # Unique channel for quote_requests
         )
         configs.append(config_2)
-        print(f"✅ Loaded configuration for {config_2.instance_name}")
+        print(f"[OK] Loaded configuration for {config_2.instance_name}")
     else:
         missing_all = missing_2 + (missing_db_2 if not db_url_2 else [])
-        print(f"⚠️  Instance 2 not configured (missing: {', '.join(missing_all)})")
+        print(f"[WARN] Instance 2 not configured (missing: {', '.join(missing_all)})")
     
-    print(f"✅ Loaded configuration for {config_1.instance_name}")
+    # Check Instance 3 (optional)
+    missing_3 = [var for var in INSTANCE_3_VARS if not os.getenv(var)]
+    db_url_3 = os.getenv("DATABASE_URL_3")
+    missing_db_3 = [var for var in INSTANCE_3_DB_VARS if not os.getenv(var)]
+    
+    # Instance 3 is optional, but if attempted, needs complete config
+    if not missing_3 and (db_url_3 or not missing_db_3):
+        config_3 = InstanceConfig(
+            connection_string=db_url_3,
+            pg_host=os.getenv("PGHOST_3") if not db_url_3 else None,
+            pg_database=os.getenv("PGDATABASE_3") if not db_url_3 else None,
+            pg_user=os.getenv("PGUSER_3") if not db_url_3 else None,
+            pg_password=os.getenv("PGPASSWORD_3") if not db_url_3 else None,
+            tenant_id=os.getenv("TENANT_ID_3"),
+            client_id=os.getenv("CLIENT_ID_3"),
+            client_secret=os.getenv("CLIENT_SECRET_3"),
+            from_email=os.getenv("FROM_EMAIL_3"),
+            to_email=os.getenv("TO_EMAIL_3"),
+            instance_name="Instance-3",
+            listen_channel="contact_submission_channel"  # Unique channel for contact_submissions
+        )
+        configs.append(config_3)
+        print(f"[OK] Loaded configuration for {config_3.instance_name}")
+    else:
+        missing_all_3 = missing_3 + (missing_db_3 if not db_url_3 else [])
+        print(f"[WARN] Instance 3 not configured (missing: {', '.join(missing_all_3)})")
+    
+    print(f"[OK] Loaded configuration for {config_1.instance_name}")
     return configs
 
 # ── Microsoft Graph helpers ──────────────────────────────────────────────
@@ -149,7 +188,7 @@ def graph_token(config: InstanceConfig) -> str:
     tenant_id = config.tenant_id
     instance_name = config.instance_name
     
-    print(f"🔑 [{instance_name}] Requesting Graph token for tenant: {tenant_id}")
+    print(f"[TOKEN] [{instance_name}] Requesting Graph token for tenant: {tenant_id}")
     
     # Thread-safe token cache access
     with _token_lock:
@@ -157,15 +196,15 @@ def graph_token(config: InstanceConfig) -> str:
         if tenant_id in _tokens:
             token_info = _tokens[tenant_id]
             if token_info["exp"] - time.time() > 60:
-                print(f"🔑 [{instance_name}] Using cached token")
+                print(f"[TOKEN] [{instance_name}] Using cached token")
                 return token_info["val"]
         
         # Need to refresh token - release lock during HTTP request
-        print(f"🔑 [{instance_name}] Token expired or missing, requesting new token")
+        print(f"[TOKEN] [{instance_name}] Token expired or missing, requesting new token")
     
     # Request new token (outside lock to avoid blocking other threads during HTTP call)
     token_url = f"https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token"
-    print(f"🔑 [{instance_name}] Token URL: {token_url}")
+    print(f"[TOKEN] [{instance_name}] Token URL: {token_url}")
     
     try:
         resp = requests.post(
@@ -179,17 +218,17 @@ def graph_token(config: InstanceConfig) -> str:
             timeout=15,
         )
         
-        print(f"🔑 [{instance_name}] Token response status: {resp.status_code}")
+        print(f"[TOKEN] [{instance_name}] Token response status: {resp.status_code}")
         
         if resp.status_code == 200:
             body = resp.json()
-            print(f"🔑 [{instance_name}] Token acquired successfully")
+            print(f"[TOKEN] [{instance_name}] Token acquired successfully")
         else:
-            print(f"❌ [{instance_name}] Token request failed: {resp.text}")
+            print(f"[ERROR] [{instance_name}] Token request failed: {resp.text}")
             resp.raise_for_status()
             
     except Exception as e:
-        print(f"❌ [{instance_name}] Token request exception: {e}")
+        print(f"[ERROR] [{instance_name}] Token request exception: {e}")
         raise
     
     # Thread-safe token cache update
@@ -198,7 +237,7 @@ def graph_token(config: InstanceConfig) -> str:
             "val": body["access_token"],
             "exp": time.time() + int(body.get("expires_in", 3600))
         }
-        print(f"🔑 [{instance_name}] Token cached successfully")
+        print(f"[TOKEN] [{instance_name}] Token cached successfully")
         return _tokens[tenant_id]["val"]
 
 class DatabaseListener:
@@ -209,36 +248,86 @@ class DatabaseListener:
         self.conn: Optional[psycopg.Connection] = None
     
     def connect(self) -> None:
-        """Establish database connection."""
+        """Establish database connection with SSL and timeout settings."""
         try:
+            connection_params = {
+                "autocommit": True,  # LISTEN works best with autocommit
+                "connect_timeout": 30,  # 30 second connection timeout
+                "keepalives_idle": 30,  # Send keepalive after 30 seconds of inactivity
+                "keepalives_interval": 10,  # Send keepalive every 10 seconds
+                "keepalives_count": 3,  # Give up after 3 failed keepalives
+            }
+            
             if self.config.connection_string:
-                # Use connection string
+                # Check if this is a Neon database (needs special SSL handling)
+                if "neon.tech" in self.config.connection_string:
+                    print(f"[SETUP] [{self.config.instance_name}] Detected Neon database, applying SSL optimizations...")
+                    # Add SSL-specific parameters for Neon
+                    connection_params.update({
+                        "sslmode": "require",
+                        "application_name": f"rpm-mailer-{self.config.instance_name.lower()}",
+                    })
+                
+                # Use connection string with additional parameters
                 self.conn = psycopg.connect(
                     self.config.connection_string,
-                    autocommit=True,  # LISTEN works best with autocommit
+                    **connection_params
                 )
                 db_name = self.config.connection_string.split('/')[-1].split('?')[0]
-                print(f"🔗 [{self.config.instance_name}] Connected via connection string to database: {db_name}")
+                print(f"[CONN] [{self.config.instance_name}] Connected via connection string to database: {db_name}")
             else:
                 # Use individual parameters
-                self.conn = psycopg.connect(
-                    host=self.config.pg_host,
-                    dbname=self.config.pg_database,
-                    user=self.config.pg_user,
-                    password=self.config.pg_password,
-                    autocommit=True,  # LISTEN works best with autocommit
-                )
-                print(f"🔗 [{self.config.instance_name}] Connected to database: {self.config.pg_database}")
+                connection_params.update({
+                    "host": self.config.pg_host,
+                    "dbname": self.config.pg_database,
+                    "user": self.config.pg_user,
+                    "password": self.config.pg_password,
+                })
+                
+                # Check if this is a Neon database
+                if self.config.pg_host and "neon.tech" in self.config.pg_host:
+                    print(f"[SETUP] [{self.config.instance_name}] Detected Neon database, applying SSL optimizations...")
+                    connection_params.update({
+                        "sslmode": "require",
+                        "application_name": f"rpm-mailer-{self.config.instance_name.lower()}",
+                    })
+                
+                self.conn = psycopg.connect(**connection_params)
+                print(f"[CONN] [{self.config.instance_name}] Connected to database: {self.config.pg_database}")
+                
+            # Test the connection immediately
+            with self.conn.cursor() as cur:
+                cur.execute("SELECT version()")
+                version = cur.fetchone()[0]
+                print(f"[CONN] [{self.config.instance_name}] Database version: {version[:50]}...")
+                
         except Exception as e:
-            print(f"❌ [{self.config.instance_name}] Failed to connect to database: {e}")
+            print(f"[ERROR] [{self.config.instance_name}] Failed to connect to database: {e}")
             raise
     
     def send_email(self, record: dict) -> None:
-        """Build a clean, plain-text email from an inquiry/quote request and send it."""
+        """Build a clean, plain-text email from an inquiry/quote request/contact submission and send it."""
         # Determine email type based on available fields
         is_quote_request = 'company' in record and 'service' in record
+        is_contact_submission = 'inquiry_type' in record and ('first_name' in record or 'last_name' in record)
         
-        if is_quote_request:
+        if is_contact_submission:
+            subject = "🆕 New Contact Submission Received"
+            header = "New Contact Submission Received"
+            
+            # Normalize contact submission fields for display
+            normalized_record = self._normalize_contact_submission_fields(record)
+            
+            # Contact submission specific fields
+            body_lines = [
+                f"Name         : {normalized_record.get('name', '--')}",
+                f"Email        : {normalized_record.get('email', '--')}",
+                f"Phone        : {normalized_record.get('phone') or '--'}",
+                f"Inquiry Type : {normalized_record.get('inquiry_type', '--')}",
+                f"Message      : {normalized_record.get('message', '--')}",
+                f"Created At   : {normalized_record.get('created_at', '--')}",
+            ]
+        elif is_quote_request:
             subject = "🆕 New Quote Request Received"
             header = "New Quote Request Received"
             
@@ -290,22 +379,22 @@ class DatabaseListener:
         }
         
         try:
-            print(f"📧 [{self.config.instance_name}] Sending {subject} to {self.config.to_email}")
-            print(f"📧 [{self.config.instance_name}] Using Graph URL: {sendmail_url}")
+            print(f"[EMAIL] [{self.config.instance_name}] Sending {subject} to {self.config.to_email}")
+            print(f"[EMAIL] [{self.config.instance_name}] Using Graph URL: {sendmail_url}")
             
             response = requests.post(sendmail_url, headers=headers, json=payload, timeout=15)
             
-            print(f"📧 [{self.config.instance_name}] Email API response status: {response.status_code}")
+            print(f"[EMAIL] [{self.config.instance_name}] Email API response status: {response.status_code}")
             
             if response.status_code == 202:
-                print(f"📨 [{self.config.instance_name}] Email sent successfully to {self.config.to_email} for record id: {record.get('id')}")
+                print(f"[SENT] [{self.config.instance_name}] Email sent successfully to {self.config.to_email} for record id: {record.get('id')}")
             else:
-                print(f"❌ [{self.config.instance_name}] Email API error: {response.text}")
+                print(f"[ERROR] [{self.config.instance_name}] Email API error: {response.text}")
                 response.raise_for_status()
                 
         except Exception as e:
-            print(f"❌ [{self.config.instance_name}] Failed to send email: {e}")
-            print(f"❌ [{self.config.instance_name}] Email config - FROM: {self.config.from_email}, TO: {self.config.to_email}")
+            print(f"[ERROR] [{self.config.instance_name}] Failed to send email: {e}")
+            print(f"[ERROR] [{self.config.instance_name}] Email config - FROM: {self.config.from_email}, TO: {self.config.to_email}")
             raise
     
     def fetch_full_record(self, record_id: str) -> Optional[dict]:
@@ -325,7 +414,12 @@ class DatabaseListener:
             
             with fetch_conn.cursor() as cur:
                 # Determine table name based on instance
-                table_name = "quote_requests" if self.config.instance_name == "Instance-2" else "inquiries"
+                if self.config.instance_name == "Instance-2":
+                    table_name = "quote_requests"
+                elif self.config.instance_name == "Instance-3":
+                    table_name = "contact_submissions"
+                else:
+                    table_name = "inquiries"
                 
                 cur.execute(f"SELECT * FROM {table_name} WHERE id = %s", (record_id,))
                 row = cur.fetchone()
@@ -334,21 +428,24 @@ class DatabaseListener:
                     columns = [desc[0] for desc in cur.description]
                     record = dict(zip(columns, row))
                     
-                    print(f"📄 [{self.config.instance_name}] Raw record fetched: name='{record.get('name')}', email='{record.get('email')}'")
+                    print(f"[DATA] [{self.config.instance_name}] Raw record fetched: name='{record.get('name')}', email='{record.get('email')}'")
                     
-                    # For quote_requests, map fields to match email template expectations
+                    # Normalize fields based on table type
                     if table_name == "quote_requests":
                         record = self._normalize_quote_request_fields(record)
-                        print(f"📄 [{self.config.instance_name}] Normalized record for email template")
+                        print(f"[DATA] [{self.config.instance_name}] Normalized quote_requests record for email template")
+                    elif table_name == "contact_submissions":
+                        record = self._normalize_contact_submission_fields(record)
+                        print(f"[DATA] [{self.config.instance_name}] Normalized contact_submissions record for email template")
                     
                     fetch_conn.close()
                     return record
                 else:
-                    print(f"⚠️  [{self.config.instance_name}] Record with ID {record_id} not found in {table_name}")
+                    print(f"[WARN]  [{self.config.instance_name}] Record with ID {record_id} not found in {table_name}")
                     fetch_conn.close()
                     return None
         except Exception as e:
-            print(f"❌ [{self.config.instance_name}] Failed to fetch record {record_id}: {e}")
+            print(f"[ERROR] [{self.config.instance_name}] Failed to fetch record {record_id}: {e}")
             if 'fetch_conn' in locals():
                 fetch_conn.close()
             return None
@@ -371,74 +468,141 @@ class DatabaseListener:
         
         return normalized
 
+    def _normalize_contact_submission_fields(self, record: dict) -> dict:
+        """Normalize contact_submissions fields to match email template expectations."""
+        normalized = record.copy()
+        
+        # Map contact_submissions fields to standard inquiry format
+        # contact_submissions has: first_name, last_name, email, phone, inquiry_type, message, created_at
+        
+        # Combine first_name and last_name into name if they exist separately
+        if 'first_name' in record and 'last_name' in record:
+            normalized['name'] = f"{record.get('first_name', '')} {record.get('last_name', '')}".strip()
+        elif 'first_name' in record:
+            normalized['name'] = record.get('first_name', '')
+        elif 'last_name' in record:
+            normalized['name'] = record.get('last_name', '')
+        
+        # Use inquiry_type as subject if available
+        if 'inquiry_type' in record:
+            normalized['subject'] = f"Contact Inquiry - {record.get('inquiry_type', 'General')}"
+        else:
+            normalized['subject'] = 'Contact Inquiry'
+        
+        # For contact submissions, vehicle_id is not relevant, use inquiry_type instead
+        if 'inquiry_type' in record:
+            normalized['vehicle_id'] = record.get('inquiry_type', 'N/A')
+        else:
+            normalized['vehicle_id'] = 'Contact Submission'
+            
+        return normalized
+
     def listen_and_process(self) -> None:
-        """Listen for new records and send notification emails."""
-        # CRITICAL: Create the connection in the worker thread, not the main thread
-        # PostgreSQL LISTEN/NOTIFY doesn't work reliably across thread boundaries
-        print(f"🔧 [{self.config.instance_name}] Creating database connection in worker thread...")
-        self.connect()
+        """Listen for new records and send notification emails with robust reconnection."""
+        max_reconnect_attempts = 3
+        reconnect_delay = 10  # Start with 10 seconds
         
-        try:
-            with self.conn.cursor() as cur:
-                cur.execute(f"LISTEN {self.config.listen_channel};")
+        while True:
+            reconnect_attempts = 0
             
-            print(f"🔔 [{self.config.instance_name}] Listening on channel {self.config.listen_channel}...")
-            
-            # Simple notification loop - let psycopg handle the blocking
-            print(f"🔄 [{self.config.instance_name}] Starting notification processing loop...")
-            
-            while True:
-                try:
-                    # Use the connection's built-in notification iterator
-                    for notify in self.conn.notifies():
-                        try:
-                            print(f"📥 [{self.config.instance_name}] Received notification on {notify.channel}: {notify.payload}")
-                            
-                            # Parse notification payload (expecting minimal JSON with just ID)
-                            notification_data = json.loads(notify.payload)
-                            
-                            # Handle both new minimal format {"id": "123"} and legacy full record format
-                            if "id" in notification_data and len(notification_data) == 1:
-                                # New minimal format - fetch full record
-                                record_id = notification_data["id"]
-                                print(f"📋 [{self.config.instance_name}] Fetching full record for ID: {record_id}")
-                                record = self.fetch_full_record(record_id)
-                                if record:
-                                    print(f"🎯 [{self.config.instance_name}] Record fetched successfully, attempting to send email...")
-                                    self.send_email(record)
-                                    print(f"✅ [{self.config.instance_name}] Email sending completed for record {record_id}")
-                                else:
-                                    print(f"⚠️  [{self.config.instance_name}] Skipping notification for missing record {record_id}")
-                            else:
-                                # Legacy format - use notification data directly
-                                print(f"📥 [{self.config.instance_name}] Using legacy notification format")
-                                self.send_email(notification_data)
-                                
-                        except Exception as exc:
-                            print(f"⚠️  [{self.config.instance_name}] Failed to handle notification: {exc}")
-                            import traceback
-                            print(f"⚠️  [{self.config.instance_name}] Exception traceback:")
-                            traceback.print_exc()
-                            
-                except KeyboardInterrupt:
-                    print(f"🛑 [{self.config.instance_name}] Listener interrupted")
-                    break
-                except Exception as e:
-                    print(f"⚠️  [{self.config.instance_name}] Notification loop error: {e}")
-                    time.sleep(5)  # Pause before retrying
-        
-        except Exception as e:
-            print(f"❌ [{self.config.instance_name}] Database listening failed: {e}")
-            # Try to reconnect after a delay
-            print(f"🔄 [{self.config.instance_name}] Attempting to reconnect in 5 seconds...")
-            time.sleep(5)
             try:
+                # CRITICAL: Create the connection in the worker thread, not the main thread
+                print(f"[SETUP] [{self.config.instance_name}] Creating database connection in worker thread...")
                 self.connect()
-                self.listen_and_process()
-            except Exception as reconnect_error:
-                print(f"💥 [{self.config.instance_name}] Failed to reconnect: {reconnect_error}")
-                print(f"⏸️  [{self.config.instance_name}] Listener stopped.")
+                
+                with self.conn.cursor() as cur:
+                    cur.execute(f"LISTEN {self.config.listen_channel};")
+                
+                print(f"[LISTEN] [{self.config.instance_name}] Listening on channel {self.config.listen_channel}...")
+                print(f"[LOOP] [{self.config.instance_name}] Starting notification processing loop...")
+                
+                # Reset reconnection state on successful connection
+                reconnect_attempts = 0
+                reconnect_delay = 10
+                
+                # Main notification processing loop
+                while True:
+                    try:
+                        # Use the connection's built-in notification iterator with timeout
+                        self.conn.timeout = 30  # 30 second timeout to detect connection issues
+                        
+                        for notify in self.conn.notifies():
+                            try:
+                                print(f"[RECV] [{self.config.instance_name}] Received notification on {notify.channel}: {notify.payload}")
+                                
+                                # Parse notification payload (expecting minimal JSON with just ID)
+                                notification_data = json.loads(notify.payload)
+                                
+                                # Handle both new minimal format {"id": "123"} and legacy full record format
+                                if "id" in notification_data and len(notification_data) == 1:
+                                    # New minimal format - fetch full record
+                                    record_id = notification_data["id"]
+                                    print(f"[FETCH] [{self.config.instance_name}] Fetching full record for ID: {record_id}")
+                                    record = self.fetch_full_record(record_id)
+                                    if record:
+                                        print(f"[SUCCESS] [{self.config.instance_name}] Record fetched successfully, attempting to send email...")
+                                        self.send_email(record)
+                                        print(f"[OK] [{self.config.instance_name}] Email sending completed for record {record_id}")
+                                    else:
+                                        print(f"[WARN]  [{self.config.instance_name}] Skipping notification for missing record {record_id}")
+                                else:
+                                    # Legacy format - use notification data directly
+                                    print(f"[RECV] [{self.config.instance_name}] Using legacy notification format")
+                                    self.send_email(notification_data)
+                                    
+                            except Exception as exc:
+                                print(f"[WARN]  [{self.config.instance_name}] Failed to handle notification: {exc}")
+                                import traceback
+                                print(f"[WARN]  [{self.config.instance_name}] Exception traceback:")
+                                traceback.print_exc()
+                        
+                        # Heartbeat check - send a simple query to keep connection alive
+                        if hasattr(self.conn, 'cursor'):
+                            try:
+                                with self.conn.cursor() as cur:
+                                    cur.execute("SELECT 1")
+                                    cur.fetchone()
+                            except Exception as heartbeat_error:
+                                print(f"[WARN] [{self.config.instance_name}] Heartbeat failed: {heartbeat_error}")
+                                raise heartbeat_error  # Trigger reconnection
+                                
+                    except KeyboardInterrupt:
+                        print(f"[STOP] [{self.config.instance_name}] Listener interrupted")
+                        return
+                    except Exception as e:
+                        error_msg = str(e).lower()
+                        # Check for connection-related errors
+                        if any(keyword in error_msg for keyword in ['ssl', 'connection', 'closed', 'lost', 'timeout']):
+                            print(f"[WARN] [{self.config.instance_name}] Connection error detected: {e}")
+                            raise e  # Trigger reconnection logic
+                        else:
+                            print(f"[WARN] [{self.config.instance_name}] Non-connection error: {e}")
+                            time.sleep(5)  # Short pause for non-connection errors
+                            
+            except KeyboardInterrupt:
+                print(f"[STOP] [{self.config.instance_name}] Listener interrupted")
                 return
+            except Exception as e:
+                reconnect_attempts += 1
+                print(f"[ERROR] [{self.config.instance_name}] Database connection failed (attempt {reconnect_attempts}/{max_reconnect_attempts}): {e}")
+                
+                # Close any existing connection
+                if self.conn:
+                    try:
+                        self.conn.close()
+                    except:
+                        pass
+                    self.conn = None
+                
+                if reconnect_attempts >= max_reconnect_attempts:
+                    print(f"[FAIL] [{self.config.instance_name}] Max reconnection attempts reached. Waiting {reconnect_delay} seconds before retry cycle...")
+                    time.sleep(reconnect_delay)
+                    reconnect_attempts = 0  # Reset for next cycle
+                    reconnect_delay = min(reconnect_delay * 1.5, 60)  # Exponential backoff, max 60s
+                else:
+                    print(f"[LOOP] [{self.config.instance_name}] Attempting to reconnect in {reconnect_delay} seconds...")
+                    time.sleep(reconnect_delay)
+                    reconnect_delay = min(reconnect_delay + 5, 30)  # Gradual increase, max 30s
 
 # ── Main entry point ─────────────────────────────────────────────────────
 
@@ -447,10 +611,10 @@ def main() -> None:
     configs = load_instance_configs()
     
     if not configs:
-        print("❌ No valid configurations found. Exiting.")
+        print("[ERROR] No valid configurations found. Exiting.")
         return
     
-    print(f"🚀 Starting {len(configs)} database listener(s) with supervision...")
+    print(f"[START] Starting {len(configs)} database listener(s) with supervision...")
     
     # Use ThreadPoolExecutor for better thread management
     with ThreadPoolExecutor(max_workers=len(configs), thread_name_prefix="Listener") as executor:
@@ -465,7 +629,7 @@ def main() -> None:
                 
             future = executor.submit(worker)
             futures[config.instance_name] = future
-            print(f"🧵 Started supervised thread for {config.instance_name}")
+            print(f"[THREAD] Started supervised thread for {config.instance_name}")
         
         try:
             # Supervision loop - check for failed threads every 30 seconds
@@ -478,23 +642,23 @@ def main() -> None:
                         try:
                             # This will raise any exception that occurred in the thread
                             future.result(timeout=0.1)
-                            print(f"⚠️  [{instance_name}] Thread completed unexpectedly")
+                            print(f"[WARN]  [{instance_name}] Thread completed unexpectedly")
                         except Exception as e:
-                            print(f"💥 [{instance_name}] Thread failed with error: {e}")
+                            print(f"[FAIL] [{instance_name}] Thread failed with error: {e}")
                         
                         # Restart the failed listener
-                        print(f"🔄 [{instance_name}] Restarting listener thread...")
+                        print(f"[LOOP] [{instance_name}] Restarting listener thread...")
                         config = next(c for c in configs if c.instance_name == instance_name)
                         listener = DatabaseListener(config)
                         new_future = executor.submit(listener.listen_and_process)
                         futures[instance_name] = new_future
-                        print(f"✅ [{instance_name}] Thread restarted successfully")
+                        print(f"[OK] [{instance_name}] Thread restarted successfully")
                         
         except KeyboardInterrupt:
-            print("\n🛑 Received interrupt signal. Shutting down...")
+            print("\n[STOP] Received interrupt signal. Shutting down...")
             return
         except Exception as e:
-            print(f"❌ Unexpected error in supervision loop: {e}")
+            print(f"[ERROR] Unexpected error in supervision loop: {e}")
             return
 
 

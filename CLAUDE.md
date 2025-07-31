@@ -106,3 +106,57 @@ The system automatically detects which instances are configured and starts the a
 - Before committing changes or pushing commits run all tests. Investigate the test results and fix any bugs, errors or issues.
 - **Thread safety testing**: Always test multi-instance functionality in threaded environment
 - **Connection string support**: Prefer `DATABASE_URL` format over individual database variables
+
+## Deployment Configuration
+
+### Render.com Deployment
+- Uses `render.yaml` blueprint with worker service configuration
+- Supports both `DATABASE_URL` connection strings (preferred) and individual database variables
+- Region: Ohio, Plan: Starter
+- Build command: `pip install -r requirements.txt python-dotenv`
+- Start command: `python listener.py`
+
+### Environment Setup Commands
+```bash
+# Windows activation (current platform)
+python3 -m venv .venv
+.venv\Scripts\activate
+
+# Linux/Mac activation  
+source .venv/bin/activate
+```
+
+## Debug and Testing Utilities
+
+### Debug Scripts
+- `debug_instance_2.py` - Debugging tool for second instance
+- `debug_quote_requests.py` - Quote request debugging utility
+
+### SQL Test Files
+- `test_instance_1_inquiry.sql` - Test inquiry insertion for Instance 1
+- `test_instance_2_quote.sql` - Test quote request insertion for Instance 2
+- `instance_2_pg_table.sql` - Table creation for Instance 2
+
+### Testing Documentation
+- `testing_guide.md` - Comprehensive real-life testing procedures
+- Test with: `pytest tests/test_listener.py -v` for verbose output
+
+## File Structure Context
+```
+├── listener.py              # Main application
+├── tests/test_listener.py    # Unit tests with mocking utilities
+├── requirements.txt         # Production dependencies
+├── requirements-dev.txt     # Development dependencies (pytest)
+├── render.yaml             # Cloud deployment configuration
+├── testing_guide.md        # Manual testing procedures
+└── debug_*.py              # Debugging utilities
+```
+
+## Important Instruction Reminders
+Do what has been asked; nothing more, nothing less.
+NEVER create files unless they're absolutely necessary for achieving your goal.
+ALWAYS prefer editing an existing file to creating a new one.
+NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.
+
+## Workflow Best Practices
+- Always run SQL commands instead of asking the user to run them.

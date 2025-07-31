@@ -298,3 +298,164 @@ def test_instance_2_database_listener_initialization():
     
     assert listener_instance.config.instance_name == "Instance-2"
     assert listener_instance.config.listen_channel == "quote_request_channel"
+
+
+def test_load_instance_configs_triple_instance(monkeypatch):
+    """Test loading configurations for all three instances."""
+    env_vars = {
+        # Instance 1
+        "PGHOST": "localhost",
+        "PGDATABASE": "db1",
+        "PGUSER": "user1",
+        "PGPASSWORD": "pass1",
+        "TENANT_ID": "tenant1",
+        "CLIENT_ID": "client1",
+        "CLIENT_SECRET": "secret1",
+        "FROM_EMAIL": "from1@example.com",
+        "TO_EMAIL": "to1@example.com",
+        # Instance 2
+        "PGHOST_2": "localhost2",
+        "PGDATABASE_2": "db2",
+        "PGUSER_2": "user2",
+        "PGPASSWORD_2": "pass2",
+        "TENANT_ID_2": "tenant2",
+        "CLIENT_ID_2": "client2",
+        "CLIENT_SECRET_2": "secret2",
+        "FROM_EMAIL_2": "from2@example.com",
+        "TO_EMAIL_2": "to2@example.com",
+        # Instance 3
+        "PGHOST_3": "localhost3",
+        "PGDATABASE_3": "db3",
+        "PGUSER_3": "user3",
+        "PGPASSWORD_3": "pass3",
+        "TENANT_ID_3": "tenant3",
+        "CLIENT_ID_3": "client3",
+        "CLIENT_SECRET_3": "secret3",
+        "FROM_EMAIL_3": "from3@example.com",
+        "TO_EMAIL_3": "to3@example.com"
+    }
+    monkeypatch.setattr("os.getenv", lambda key, default=None: env_vars.get(key, default))
+
+    configs = listener.load_instance_configs()
+    
+    assert len(configs) == 3
+    assert configs[0].instance_name == "Instance-1"
+    assert configs[1].instance_name == "Instance-2"
+    assert configs[2].instance_name == "Instance-3"
+    assert configs[0].pg_database == "db1"
+    assert configs[1].pg_database == "db2"
+    assert configs[2].pg_database == "db3"
+    assert configs[0].from_email == "from1@example.com"
+    assert configs[1].from_email == "from2@example.com"
+    assert configs[2].from_email == "from3@example.com"
+
+
+def test_all_instances_unique_notification_channels(monkeypatch):
+    """Test that all three instances use unique notification channels."""
+    env_vars = {
+        # Instance 1
+        "DATABASE_URL": "postgresql://user:pass@host:5432/db1?sslmode=require",
+        "TENANT_ID": "tenant1",
+        "CLIENT_ID": "client1",
+        "CLIENT_SECRET": "secret1",
+        "FROM_EMAIL": "from1@example.com", 
+        "TO_EMAIL": "to1@example.com",
+        # Instance 2
+        "DATABASE_URL_2": "postgresql://user:pass@host:5432/db2?sslmode=require",
+        "TENANT_ID_2": "tenant2",
+        "CLIENT_ID_2": "client2",
+        "CLIENT_SECRET_2": "secret2",
+        "FROM_EMAIL_2": "from2@example.com",
+        "TO_EMAIL_2": "to2@example.com",
+        # Instance 3
+        "DATABASE_URL_3": "postgresql://user:pass@host:5432/db3?sslmode=require",
+        "TENANT_ID_3": "tenant3",
+        "CLIENT_ID_3": "client3",
+        "CLIENT_SECRET_3": "secret3",
+        "FROM_EMAIL_3": "from3@example.com",
+        "TO_EMAIL_3": "to3@example.com"
+    }
+    monkeypatch.setattr("os.getenv", lambda key, default=None: env_vars.get(key, default))
+
+    configs = listener.load_instance_configs()
+    
+    # Verify unique channels to prevent cross-database interference
+    channels = [config.listen_channel for config in configs]
+    assert len(set(channels)) == 3  # All channels should be unique
+    assert configs[0].listen_channel == "new_record_channel"  # Instance 1
+    assert configs[1].listen_channel == "quote_request_channel"  # Instance 2
+    assert configs[2].listen_channel == "contact_submission_channel"  # Instance 3
+
+
+def test_contact_submission_email_formatting(monkeypatch):
+    """Test that contact_submissions are formatted correctly for email."""
+    sent = {}
+    def fake_post(url, headers=None, json=None, timeout=0):
+        sent['url'] = url
+        sent['headers'] = headers
+        sent['payload'] = json
+        class Resp:
+            def __init__(self):
+                self.status_code = 202
+            def raise_for_status(self):
+                pass
+        return Resp()
+    monkeypatch.setattr(listener.requests, "post", fake_post)
+    monkeypatch.setattr(listener, "graph_token", lambda config: "test-token")
+
+    # Create Instance 3 config (contact_submissions)
+    config = create_test_config("Instance-3")
+    db_listener = listener.DatabaseListener(config)
+    
+    # Contact submission record with first_name, last_name, and inquiry_type fields
+    contact_record = {
+        "id": "789",
+        "first_name": "John",
+        "last_name": "Doe",
+        "email": "john.doe@example.com",
+        "phone": "555-0456",
+        "inquiry_type": "Business Inquiry",
+        "message": "I would like to learn more about your services",
+        "created_at": "2023-01-01 12:00:00"
+    }
+
+    db_listener.send_email(contact_record)
+
+    assert sent['payload']['message']['subject'] == "🆕 New Contact Submission Received"
+    body_content = sent['payload']['message']['body']['content']
+    assert "New Contact Submission Received" in body_content
+    assert "John Doe" in body_content  # name should be normalized from first_name + last_name
+    assert "Business Inquiry" in body_content
+    assert "555-0456" in body_content
+
+
+def test_instance_3_database_listener_initialization():
+    """Test that Instance 3 uses correct table and channel configuration."""
+    config = create_test_config("Instance-3")
+    config.listen_channel = "contact_submission_channel"
+    
+    listener_instance = listener.DatabaseListener(config)
+    
+    assert listener_instance.config.instance_name == "Instance-3"
+    assert listener_instance.config.listen_channel == "contact_submission_channel"
+
+
+def test_contact_submission_field_normalization():
+    """Test that contact submission fields are normalized correctly."""
+    config = create_test_config("Instance-3")
+    db_listener = listener.DatabaseListener(config)
+    
+    # Test record with separate first_name and last_name
+    record = {
+        "id": "123",
+        "first_name": "Jane",
+        "last_name": "Smith",
+        "email": "jane.smith@example.com",
+        "inquiry_type": "Support Request"
+    }
+    
+    normalized = db_listener._normalize_contact_submission_fields(record)
+    
+    assert normalized['name'] == "Jane Smith"
+    assert normalized['subject'] == "Contact Inquiry - Support Request"
+    assert normalized['vehicle_id'] == "Support Request"
